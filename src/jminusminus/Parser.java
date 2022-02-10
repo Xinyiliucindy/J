@@ -4,6 +4,9 @@ package jminusminus;
 
 import java.util.ArrayList;
 
+// import jminusminus.JMultiplyOp;
+// import jminusminus.JDivideOp;
+
 import static jminusminus.TokenKind.*;
 
 /**
@@ -1133,7 +1136,11 @@ public class Parser {
         while (more) {
             if (have(STAR)) {
                 lhs = new JMultiplyOp(line, lhs, unaryExpression());
-            } else {
+            } 
+            else if (have(DIV)) {
+                lhs = new JDivideOp(line, lhs, unaryExpression());
+            } 
+            else {
                 more = false;
             }
         }

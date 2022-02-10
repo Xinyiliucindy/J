@@ -111,10 +111,12 @@ class Scanner {
                     while (ch != '\n' && ch != EOFCH) {
                         nextCh();
                     }
-                } else {
-                    reportScannerError("Operator / is not supported in j--.");
+                } 
+                else {
+                    return new TokenInfo(DIV, line);
                 }
-            } else {
+            } 
+            else {
                 moreWhiteSpace = false;
             }
         }
