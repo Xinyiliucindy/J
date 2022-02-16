@@ -9,6 +9,8 @@ import java.io.LineNumberReader;
 
 import java.util.Hashtable;
 
+import javax.xml.stream.events.EndDocument;
+
 import static jminusminus.TokenKind.*;
 
 /**
@@ -114,6 +116,17 @@ class Scanner {
                 } 
                 else {
                     return new TokenInfo(DIV, line);
+                }
+            }
+            else if (ch == '%'){
+                nextCh();
+                if (ch == '%') {
+                    while (ch != '\n' && ch != EOFCH) {
+                        nextCh();
+                    }
+                }
+                else {
+                    return new TokenInfo(REM, line);
                 }
             } 
             else {
