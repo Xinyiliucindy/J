@@ -203,14 +203,33 @@ class Scanner {
             }
         case '>':
             nextCh();
-            return new TokenInfo(GT, line);
+            if (ch == '>')
+            {
+                nextCh();
+                if (ch == '>')
+                {
+                    // nextCh();
+                    return new TokenInfo(USRIGHT, line);        // >>>
+                }
+                else
+                {   
+                    return new TokenInfo(SSRIGHT, line);        // >>
+                }
+            }
+            return new TokenInfo(GT, line);                     // >
         case '<':
             nextCh();
             if (ch == '=') {
                 nextCh();
-                return new TokenInfo(LE, line);
-            } else {
-                reportScannerError("Operator < is not supported in j--.");
+                return new TokenInfo(LE, line);                 // <=
+            }
+            else if (ch == '<')
+            {
+                nextCh();
+                return new TokenInfo(SSLEFT, line);             // <<
+            } 
+            else {
+                reportScannerError("Operator < is not supported in j--.");      // < not implemented, see TokenInfo
                 return getNextToken();
             }
         case '\'':

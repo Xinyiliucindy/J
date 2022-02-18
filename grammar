@@ -79,9 +79,12 @@ conditionalAndExpression ::= equalityExpression // level 10
 equalityExpression ::= relationalExpression  // level 6
                          {EQUAL relationalExpression}
 
-relationalExpression ::= additiveExpression       // level 5
-                           [(GT | LE) additiveExpression
+relationalExpression ::= binaryshiftExpression       // level 5
+                           [(GT | LE) binaryshiftExpression
                            | INSTANCEOF referenceType]
+
+binaryshiftExpression ::= additiveExpression    // level 4      -- added signed shift left, signed shift right, unsigned shift right as level 4
+                          {(SSLEFT | SSRIGHT | USRIGHT)  additiveExpression}
 
 additiveExpression ::= multiplicativeExpression // level 3
                          {(PLUS | MINUS) multiplicativeExpression}
