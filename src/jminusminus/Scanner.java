@@ -208,7 +208,7 @@ class Scanner {
                 nextCh();
                 if (ch == '>')
                 {
-                    // nextCh();
+                    nextCh();
                     return new TokenInfo(USRIGHT, line);        // >>>
                 }
                 else

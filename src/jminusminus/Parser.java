@@ -1079,16 +1079,46 @@ public class Parser {
 
     private JExpression relationalExpression() {
         int line = scanner.token().line();
-        JExpression lhs = additiveExpression();
+        JExpression lhs = binaryshiftExpression();
         if (have(GT)) {
-            return new JGreaterThanOp(line, lhs, additiveExpression());
+            return new JGreaterThanOp(line, lhs, binaryshiftExpression());
         } else if (have(LE)) {
-            return new JLessEqualOp(line, lhs, additiveExpression());
+            return new JLessEqualOp(line, lhs, binaryshiftExpression());
         } else if (have(INSTANCEOF)) {
             return new JInstanceOfOp(line, lhs, referenceType());
         } else {
             return lhs;
         }
+    }
+
+    /**
+     * Parse an binary expression.
+     * 
+     * <pre>
+            binaryshiftExpression ::= additiveExpression    // level 4      
+                          {(SSLEFT | SSRIGHT | USRIGHT)  additiveExpression}
+     * </pre>
+     * 
+     * @return an AST for an binaryExpression.
+     */
+
+    private JExpression binaryshiftExpression() {
+        int line = scanner.token().line();
+        boolean more = true;
+        JExpression lhs = additiveExpression();
+        while (more) {
+            if (have(SSLEFT)) {
+                lhs = new JSSLEFTOp(line, lhs, additiveExpression());
+            } else if (have(SSRIGHT)) {
+                lhs = new JSSRIGHTOp(line, lhs, additiveExpression());
+            } else if (have(USRIGHT)) {
+                lhs = new JUSRIGHTOp(line, lhs, additiveExpression());
+            }
+            else {
+                more = false;
+            }
+        }
+        return lhs;
     }
 
     /**
