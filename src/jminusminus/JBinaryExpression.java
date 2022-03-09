@@ -311,6 +311,38 @@ class JRemainOp extends JBinaryExpression {
 
 }
 
+
+/**
+ * The AST node for a bitwiseOR (|) expression.
+ */
+
+class JBitwiseOrOp extends JBinaryExpression {
+    public JBitwiseOrOp(int line, JExpression lhs, JExpression rhs) {
+        super (line, "|", lhs, rhs);
+    }
+
+
+
+    public JExpression analyze ( Context context ) {
+        lhs = ( JExpression ) lhs . analyze ( context );
+        rhs = ( JExpression ) rhs . analyze ( context );
+        lhs . type (). mustMatchExpected ( line () , Type . INT );
+        rhs . type (). mustMatchExpected ( line () , Type . INT );
+        type = Type . INT ;
+        return this ;
+        }
+
+    public void codegen(CLEmitter output) {
+        lhs.codegen(output);
+        rhs.codegen(output);
+        output.addNoArgInstruction(IOR);
+        }    
+}
+
+
+/**
+ * The AST node for a signed shift left (<<) expression.
+ */
 class JSSLEFTOp extends JBinaryExpression {
 
     public JSSLEFTOp(int line, JExpression lhs, JExpression rhs) {
@@ -333,6 +365,10 @@ class JSSLEFTOp extends JBinaryExpression {
     }
 }
 
+
+/**
+ * The AST node for a signed shift right (>>) expression.
+ */
 class JSSRIGHTOp extends JBinaryExpression {
 
     public JSSRIGHTOp(int line, JExpression lhs, JExpression rhs) {
@@ -355,6 +391,10 @@ class JSSRIGHTOp extends JBinaryExpression {
     }
 }
 
+
+/**
+ * The AST node for a unsigned shift right (>>>) expression.
+ */
 class JUSRIGHTOp extends JBinaryExpression {
 
     public JUSRIGHTOp(int line, JExpression lhs, JExpression rhs) {
@@ -375,4 +415,31 @@ class JUSRIGHTOp extends JBinaryExpression {
         rhs.codegen(output);
         output.addNoArgInstruction(IUSHR);
     }
+}
+
+
+/**
+ * The AST node for a bit exclusive or (^) expression.
+ */
+class JBitXorOp extends JBinaryExpression {
+
+    public JBitXorOp(int line, JExpression lhs, JExpression rhs) {
+        super(line, "^", lhs, rhs);
+    }
+
+    public JExpression analyze(Context context) {
+        lhs = (JExpression) lhs.analyze(context);
+        rhs = (JExpression) rhs.analyze(context);
+        lhs.type().mustMatchExpected(line(), Type.INT);
+        rhs.type().mustMatchExpected(line(), Type.INT);
+        type = Type.INT;
+        return this;
+    }
+
+    public void codegen(CLEmitter output) {
+        lhs.codegen(output);
+        rhs.codegen(output);
+        output.addNoArgInstruction(IXOR);
+    }
+
 }

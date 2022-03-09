@@ -6,11 +6,11 @@ import junit.framework.TestCase;
 import pass.UnSignedShiftRight;
 
 public class UnsignedShiftRightTest extends TestCase{
-    private UnsignedShiftRight usright;
+    private UnSignedShiftRight usright;
 
     protected void setUp() throws Exception{
         super.setUp();
-        usright = new UnsignedShiftRight();
+        usright = new UnSignedShiftRight();
     }
 
     protected void tearDown() throws Exception{
@@ -18,8 +18,8 @@ public class UnsignedShiftRightTest extends TestCase{
     }
 
     public void testUSR() {
-        this.assertEquals(usright.UnsignedShiftRight(8, 2), 2);
-        this.assertEquals(usright.UnsignedShiftRight(-42, 1), -21);   //?
-        this.assertEquals(usright.UnsignedShiftRight(127, 3), 15);
+        this.assertEquals(usright.unsignedshiftright(8, 2), 2);
+        this.assertEquals(usright.unsignedshiftright(-42, 1), -21);   //?
+        this.assertEquals(usright.unsignedshiftright(127, 3), 15);
     }
 }

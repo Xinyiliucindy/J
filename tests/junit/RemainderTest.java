@@ -1,5 +1,7 @@
 package junit;
 
+import javax.sound.midi.Soundbank;
+
 import junit.framework.TestCase;
 import pass.Remainder;
 

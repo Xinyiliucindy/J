@@ -18,8 +18,8 @@ public class SignedShiftLeftTest extends TestCase{
     }
 
     public void testSSL() {
-        this.assertEquals(ssleft.SignedShiftLeft(8, 2), 32);
-        this.assertEquals(ssleft.SignedShiftLeft(-42, 1), -84);
-        this.assertEquals(ssleft.SignedShiftLeft(127, 3), 1016);
+        this.assertEquals(ssleft.shiftleft(8, 2), 32);
+        this.assertEquals(ssleft.shiftleft(-42, 1), -84);
+        this.assertEquals(ssleft.shiftleft(127, 3), 1016);
     }
 }

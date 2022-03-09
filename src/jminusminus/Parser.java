@@ -1029,16 +1029,68 @@ public class Parser {
     private JExpression conditionalAndExpression() {
         int line = scanner.token().line();
         boolean more = true;
-        JExpression lhs = equalityExpression();
+        JExpression lhs = bitXorExpression();
         while (more) {
             if (have(LAND)) {
-                lhs = new JLogicalAndOp(line, lhs, equalityExpression());
+                lhs = new JLogicalAndOp(line, lhs, bitXorExpression());
             } else {
                 more = false;
             }
         }
         return lhs;
     }
+
+    /**
+     * Parse an equality expression.
+     * 
+     * <pre>
+     *   bitXorExpression ::= equalityExpression // level 8
+     *                    // {BITXOR equalityExpression}
+     * </pre>
+     * 
+     * @return an AST for an equalityExpression.
+     */
+    private JExpression bitXorExpression() {
+        int line = scanner.token().line();
+        boolean more = true;
+        JExpression lhs = equalityExpression();
+        while (more) {
+            if (have(BITXOR)) {
+                lhs = new JBitXorOp(line, lhs, equalityExpression());
+            } else {
+                more = false;
+            }
+        }
+        return lhs;
+    }
+
+
+    /**
+     * Parse an equality expression.
+     * 
+     * <pre>
+     * bitwiseOrExpression  ::= equalityExpression//level 7
+     *                          {BITWISE_OR equalityExpression}
+     * </pre>
+     * 
+     * @return an AST for an equalityExpression.
+     */
+
+    private JExpression bitwiseOrExpression() {
+        int line = scanner.token().line();
+        boolean more = true;
+        JExpression lhs = equalityExpression();
+        while (more) {
+            if (have(BITWISE_OR)) {
+                lhs = new JBitwiseOrOp(line, lhs, equalityExpression());
+            } else {
+                more = false;
+            }
+        }
+        return lhs;
+
+    }
+
 
     /**
      * Parse an equality expression.
@@ -1153,7 +1205,7 @@ public class Parser {
      * 
      * <pre>
      *   multiplicativeExpression ::= unaryExpression  // level 2
-     *                                  {STAR unaryExpression}
+     *                              {(STAR | DIV | REM) unaryExpression}
      * </pre>
      * 
      * @return an AST for a multiplicativeExpression.
@@ -1186,6 +1238,7 @@ public class Parser {
      * <pre>
      *   unaryExpression ::= INC unaryExpression // level 1
      *                     | MINUS unaryExpression
+     *                     | PLUS unaryExpression
      *                     | simpleUnaryExpression
      * </pre>
      * 
@@ -1198,7 +1251,13 @@ public class Parser {
             return new JPreIncrementOp(line, unaryExpression());
         } else if (have(MINUS)) {
             return new JNegateOp(line, unaryExpression());
-        } else {
+        } else if (have(PLUS)) {
+            return new JPromoteOp(line, unaryExpression());
+        } else if (have(COMPLEMENT)) {
+            return new JComplementOp(line,unaryExpression());
+        }
+        else 
+        {
             return simpleUnaryExpression();
         }
     }

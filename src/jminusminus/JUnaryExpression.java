@@ -22,11 +22,11 @@ abstract class JUnaryExpression extends JExpression {
      * unary operator, and the operand.
      * 
      * @param line
-     *            line in which the unary expression occurs in the source file.
+     *                 line in which the unary expression occurs in the source file.
      * @param operator
-     *            the unary operator.
+     *                 the unary operator.
      * @param arg
-     *            the operand.
+     *                 the operand.
      */
 
     protected JUnaryExpression(int line, String operator, JExpression arg) {
@@ -41,8 +41,8 @@ abstract class JUnaryExpression extends JExpression {
 
     public void writeToStdOut(PrettyPrinter p) {
         p.printf("<JUnaryExpression line=\"%d\" type=\"%s\" "
-                + "operator=\"%s\">\n", line(), ((type == null) ? "" : type
-                .toString()), Util.escapeSpecialXMLChars(operator));
+                + "operator=\"%s\">\n", line(),
+                ((type == null) ? "": type.toString()),  Util.escapeSpecialXMLChars(operator));
         p.indentRight();
         p.printf("<Operand>\n");
         p.indentRight();
@@ -81,7 +81,7 @@ class JNegateOp extends JUnaryExpression {
      * its type and determining the result type.
      * 
      * @param context
-     *            context in which names are resolved.
+     *                context in which names are resolved.
      * @return the analyzed (and possibly rewritten) AST subtree.
      */
 
@@ -97,8 +97,8 @@ class JNegateOp extends JUnaryExpression {
      * the operand, and then the negation instruction.
      * 
      * @param output
-     *            the code emitter (basically an abstraction for producing the
-     *            .class file).
+     *               the code emitter (basically an abstraction for producing the
+     *               .class file).
      */
 
     public void codegen(CLEmitter output) {
@@ -107,6 +107,86 @@ class JNegateOp extends JUnaryExpression {
     }
 
 }
+
+
+/**
+ * The AST node for a promote (+) expression  
+ */
+
+class JPromoteOp extends JUnaryExpression {
+
+    /**
+     * Constructs an AST node for a negation expression given its line number,
+     * and the operand.
+     * 
+     * @param line
+     *            line in which the negation expression occurs in the source
+     *            file.
+     * @param arg
+     *            the operand.
+     */
+
+    public JPromoteOp(int line, JExpression arg) {
+        super(line, "+", arg);
+    }
+
+    /**
+     * Analyzing the negation operation involves analyzing its operand, checking
+     * its type and determining the result type.
+     * 
+     * @param context
+     *            context in which names are resolved.
+     * @return the analyzed (and possibly rewritten) AST subtree.
+     */
+
+    public JExpression analyze(Context context) {
+        arg = arg.analyze(context);
+        arg.type().mustMatchOneOf(line, Type.INT,Type.CHAR);
+        type = Type.INT;
+        return this;
+    }
+
+    /**
+     * Generating code for the negation operation involves generating code for
+     * the operand, and then the negation instruction.
+     * 
+     * @param output
+     *            the code emitter (basically an abstraction for producing the
+     *            .class file).
+     */
+
+    public void codegen(CLEmitter output) {
+        arg.codegen(output);
+        output.addNoArgInstruction(IADD);     // IADD: add init, from https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-6.html  --xinyi
+     }
+
+}
+
+
+/**
+ * The AST node for a complement (~) expression  
+ */
+class JComplementOp extends JUnaryExpression {
+    public JComplementOp(int line, JExpression arg) {
+        super(line, "~", arg);
+    }
+
+    public JExpression analyze(Context context) {
+        arg = arg.analyze(context);
+        arg.type().mustMatchExpected(line(), Type.INT);
+        type = Type.INT;
+        return this;
+    }
+
+    public void codegen(CLEmitter output) {
+        arg.codegen(output);
+        output.addNoArgInstruction(INEG);   // gengxingguang: I couldnt find the clecode for complement operator,this is wrong code
+        
+    }
+
+}
+
+
 
 /**
  * The AST node for a logical NOT (!) expression.
@@ -119,10 +199,10 @@ class JLogicalNotOp extends JUnaryExpression {
      * the operand.
      * 
      * @param line
-     *            line in which the logical NOT expression occurs in the source
-     *            file.
+     *             line in which the logical NOT expression occurs in the source
+     *             file.
      * @param arg
-     *            the operand.
+     *             the operand.
      */
 
     public JLogicalNotOp(int line, JExpression arg) {
@@ -134,7 +214,7 @@ class JLogicalNotOp extends JUnaryExpression {
      * it's a boolean, and setting the result to boolean.
      * 
      * @param context
-     *            context in which names are resolved.
+     *                context in which names are resolved.
      */
 
     public JExpression analyze(Context context) {
@@ -145,13 +225,13 @@ class JLogicalNotOp extends JUnaryExpression {
     }
 
     /**
-     * Generates code for the case where we actually want a boolean value 
+     * Generates code for the case where we actually want a boolean value
      * ({@code true} or {@code false}) computed onto the stack. For example,
      * assignment to a boolean variable.
      * 
      * @param output
-     *            the code emitter (basically an abstraction for producing the
-     *            .class file).
+     *               the code emitter (basically an abstraction for producing the
+     *               .class file).
      */
 
     public void codegen(CLEmitter output) {
@@ -170,8 +250,8 @@ class JLogicalNotOp extends JUnaryExpression {
      * which we branch.
      * 
      * @param output
-     *            the code emitter (basically an abstraction for producing the
-     *            .class file).
+     *               the code emitter (basically an abstraction for producing the
+     *               .class file).
      */
 
     public void codegen(CLEmitter output, String targetLabel, boolean onTrue) {
@@ -191,9 +271,9 @@ class JPostDecrementOp extends JUnaryExpression {
      * the operand.
      * 
      * @param line
-     *            line in which the expression occurs in the source file.
+     *             line in which the expression occurs in the source file.
      * @param arg
-     *            the operand.
+     *             the operand.
      */
 
     public JPostDecrementOp(int line, JExpression arg) {
@@ -205,7 +285,7 @@ class JPostDecrementOp extends JUnaryExpression {
      * and determines the type of the result.
      * 
      * @param context
-     *            context in which names are resolved.
+     *                context in which names are resolved.
      * @return the analyzed (and possibly rewritten) AST subtree.
      */
 
@@ -224,8 +304,8 @@ class JPostDecrementOp extends JUnaryExpression {
 
     /**
      * In generating code for a post-decrement operation, we treat simple
-     * variable ({@link JVariable}) operands specially since the JVM has an 
-     * increment instruction. 
+     * variable ({@link JVariable}) operands specially since the JVM has an
+     * increment instruction.
      * Otherwise, we rely on the {@link JLhs} code generation support for
      * generating the proper code. Notice that we distinguish between
      * expressions that are statement expressions and those that are not; we
@@ -233,8 +313,8 @@ class JPostDecrementOp extends JUnaryExpression {
      * the latter case.
      * 
      * @param output
-     *            the code emitter (basically an abstraction for producing the
-     *            .class file).
+     *               the code emitter (basically an abstraction for producing the
+     *               .class file).
      */
 
     public void codegen(CLEmitter output) {
@@ -274,9 +354,9 @@ class JPreIncrementOp extends JUnaryExpression {
      * operand.
      * 
      * @param line
-     *            line in which the expression occurs in the source file.
+     *             line in which the expression occurs in the source file.
      * @param arg
-     *            the operand.
+     *             the operand.
      */
 
     public JPreIncrementOp(int line, JExpression arg) {
@@ -288,7 +368,7 @@ class JPreIncrementOp extends JUnaryExpression {
      * and determine the type of the result.
      * 
      * @param context
-     *            context in which names are resolved.
+     *                context in which names are resolved.
      * @return the analyzed (and possibly rewritten) AST subtree.
      */
 
@@ -307,8 +387,8 @@ class JPreIncrementOp extends JUnaryExpression {
 
     /**
      * In generating code for a pre-increment operation, we treat simple
-     * variable ({@link JVariable}) operands specially since the JVM has an 
-     * increment instruction. 
+     * variable ({@link JVariable}) operands specially since the JVM has an
+     * increment instruction.
      * Otherwise, we rely on the {@link JLhs} code generation support for
      * generating the proper code. Notice that we distinguish between
      * expressions that are statement expressions and those that are not; we
@@ -316,8 +396,8 @@ class JPreIncrementOp extends JUnaryExpression {
      * the latter case.
      * 
      * @param output
-     *            the code emitter (basically an abstraction for producing the
-     *            .class file).
+     *               the code emitter (basically an abstraction for producing the
+     *               .class file).
      */
 
     public void codegen(CLEmitter output) {

@@ -18,13 +18,9 @@ public class SignedShiftRightTest extends TestCase{
     }
 
     public void testSSR() {
-        this.assertEquals(ssright.SignedShiftRight(8, 2), 2);
-        this.assertEquals(ssright.SignedShiftRight(-42, 1), -21);
-        this.assertEquals(ssright.SignedShiftRight(127, 3), 15);
+        this.assertEquals(ssright.shiftright(8, 2), 2);
+        this.assertEquals(ssright.shiftright(-42, 1), -21);
+        this.assertEquals(ssright.shiftright(127, 3), 15);
     }
 }
 
-
-public class SignedShiftRightTest {
-    
-}

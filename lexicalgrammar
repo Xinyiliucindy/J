@@ -10,15 +10,32 @@
 // Reserved words
 ABSTRACT    ::= "abstract"
 BOOLEAN     ::= "boolean"
+BREAK		::= "break"			// step	1
+BYTE		::= "byte"			// step	1
+CASE		::= "case"			// step	1
+CATCH		::= "catch"			// step	1
 CHAR        ::= "char"
 CLASS       ::= "class"
+CONST		::= "const"			// step	1
+CONTINUE	::= "continue"		// step	1
+DEFAULT		::= "default"		// step	1
+DO 			::= "do"			// step	1
+DOUBLE		::= "double"		// step	1
 ELSE        ::= "else"
 EXTENDS     ::= "extends"
+FINAL		::= "final"			// step	1
+FINALLY		::= "finally"		// step	1
+FLOAT		::= "float"			// step	1
+GOTO		::= "goto"			// step	1
 FALSE       ::= "false"
 IF          ::= "if"
+IMPLEMENTS	::= "implements"	// step	1
 IMPORT      ::= "import"
 INSTANCEOF  ::= "instanceof"
 INT         ::= "int"
+INTERFACE	::= "interface"		// step	1
+LONG		::= "long"			// step	1
+NATIVE		::= "native"		// step	1
 NEW         ::= "new"
 NULL        ::= "null"
 PACKAGE     ::= "package"
@@ -26,30 +43,61 @@ PRIVATE     ::= "private"
 PROTECTED   ::= "protected"
 PUBLIC      ::= "public"
 RETURN      ::= "return"
+SHORT		::= "short"			// step	1
 STATIC      ::= "static"
+STRICTFP	::= "strictfp"		// step	1
 SUPER       ::= "super"
+SWITCH		::= "switch"		// step	1
+SYNCHRONIZED::= "synchronized"	// step	1
 THIS        ::= "this"
+THROW		::= "throw"			// step	1
+THROWS		::= "throws"		// step	1
+TRANSIENT	::= "transient"		// step	1
+TRY			::= "try"			// step	1
 TRUE        ::= "true"
 VOID        ::= "void"
+VOLATILE	::= "volatile"		// step	1
 WHILE       ::= "while"
 
 // Operators
 ASSIGN      ::= "="
 EQUAL       ::= "=="
 GT          ::= ">"
+GT_EQUAL    ::= ">="			// step	1
 INC         ::= "++"
+AND			::= "&"				// step 0
+AND_ASSIGN	::= "&="			// step 1
 LAND        ::= "&&"
+LT			::= "<"				// step 1
 LE          ::= "<="
+BITXOR      ::= "^"				// step 0
+BITXOR_ASSIGN::= "^="			// step 1
 LNOT        ::= "!"
+NOT_EQUAL 	::= "!="			// step 1
 MINUS       ::= "-"
+MINUS_ASSIGN::= "-="			// step 1
+DEC			::= "--"			// step 1
 PLUS        ::= "+"
 PLUS_ASSIGN ::= "+="
 STAR        ::= "*"
-DIV 		::= "/"
-REM			::= "%"
-SSLEFT		::= "<<"
-SSRIGHT		::= ">>"
-USRIGHT		::= ">>>"
+STAR_ASSIGN	::= "*="			// step 1
+DIV 		::= "/"				// step 0
+DIV_ASSIGN	::= "/="			// step 1
+REM			::= "%"				// step 0
+REM_ASSIGN	::= "%="			// step 1
+SSLEFT		::= "<<"			// step 0
+SSL_ASSIGN  ::= "<<="			// step 1
+SSRIGHT		::= ">>"			// step 0
+SSR_ASSIGN  ::= ">>="			// step 1
+USRIGHT		::= ">>>"			// step 0
+USR_ASSIGN	::= ">>>="			// step 1
+COMPLEMENT  ::= "~"				// step 0
+BITWISE_OR  ::= "|"				// step 0
+BITWISE_OR_ASSIGN ::= "|="		// step 1
+LOGICAL_OR  ::= "||"			// step 1
+QUESTION    ::= "?"				// step 1
+
+
 
 // Separators
 COMMA       ::= ","
@@ -61,6 +109,7 @@ RBRACK      ::= "]"
 RCURLY      ::= "}"
 RPAREN      ::= ")"
 SEMI        ::= ";"
+COLON       ::= ":"				// step 1
 
 // Identifiers
 IDENTIFIER ::= ("a"-"z"|"A"-"Z"|"_"|"$") {"a"-"z"|"A"-"Z"|"_"|"0"-"9"|"$"}

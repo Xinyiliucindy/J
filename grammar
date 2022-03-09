@@ -61,7 +61,9 @@ arguments ::= LPAREN [expression {COMMA expression}] RPAREN
 
 type ::= referenceType | basicType
 
-basicType ::= BOOLEAN | CHAR | INT 
+
+// step 1
+basicType ::= BOOLEAN | CHAR | INT | BYTE | SHORT | LONG | DOUBLE | FLOAT 
 
 referenceType ::= basicType LBRACK RBRACK {LBRACK RBRACK}
                 | qualifiedIdentifier {LBRACK RBRACK}
@@ -71,10 +73,22 @@ statementExpression ::= expression // but must have side-effect, eg i++
 expression ::= assignmentExpression
 
 assignmentExpression ::= conditionalAndExpression  // must be a valid lhs
-                           [(ASSIGN | PLUS_ASSIGN) assignmentExpression]
+                           [(ASSIGN | PLUS_ASSIGN | USR_ASSIGN
+                            | STAR_ASSIGN | MINUS_ASSIGN | AND_ASSIGN
+                            | DIV_ASSIGN | REM_ASSIGN | USR_ASSIGN
+                            | SSL_ASSIGN | SSR_ASSIGN
+                            | BITXOR_ASSIGN | BITWISE_OR_ASSIGN) assignmentExpression]
 
-conditionalAndExpression ::= equalityExpression // level 10
-                               {LAND equalityExpression}
+conditionalAndExpression ::= bitXorExpression  // level 10
+                               {LAND bitXorExpression}
+
+// yaoyao: added level 8
+bitXorExpression ::= equalityExpression //level 8
+                          {BITXOR equalityExpression}
+
+// gengxingguang: added level 7
+bitwiseOrExpression  ::= equalityExpression//level 7
+                            {BITWISE_OR equalityExpression}
 
 equalityExpression ::= relationalExpression  // level 6
                          {EQUAL relationalExpression}
@@ -82,18 +96,21 @@ equalityExpression ::= relationalExpression  // level 6
 relationalExpression ::= binaryshiftExpression       // level 5
                            [(GT | LE) binaryshiftExpression
                            | INSTANCEOF referenceType]
-
-binaryshiftExpression ::= additiveExpression    // level 4      -- added signed shift left, signed shift right, unsigned shift right as level 4
+                           
+// xinyi: added level 4
+binaryshiftExpression ::= additiveExpression    // level 4
                           {(SSLEFT | SSRIGHT | USRIGHT)  additiveExpression}
 
 additiveExpression ::= multiplicativeExpression // level 3
                          {(PLUS | MINUS) multiplicativeExpression}
 
 multiplicativeExpression ::= unaryExpression       // level 2
-                               {(STAR | DIV | REM) unaryExpression}
+                               {(STAR | DIV | REM) unaryExpression}  // xinyi: DIV, REM
 
 unaryExpression ::= INC unaryExpression  // level 1
                   | MINUS unaryExpression
+                  | PLUS unaryExpression            // zhidie: unary plus +
+                  | COMPLEMENT  unaryExpression     // gengxingguang: complement ~
                   | simpleUnaryExpression
 
 simpleUnaryExpression ::= LNOT unaryExpression

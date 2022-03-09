@@ -128,7 +128,18 @@ class Scanner {
                 else {
                     return new TokenInfo(REM, line);
                 }
-            } 
+            }
+            else if (ch == '^'){
+                nextCh();
+                if (ch == '^') {
+                    while (ch != '\n' && ch != EOFCH) {
+                        nextCh();
+                    }
+                }
+                else {
+                    return new TokenInfo(BITXOR, line);
+                }
+            }
             else {
                 moreWhiteSpace = false;
             }
@@ -201,6 +212,22 @@ class Scanner {
                 reportScannerError("Operator & is not supported in j--.");
                 return getNextToken();
             }
+        case '|':
+            nextCh();
+            // if (ch == '=') {
+            //     nextCh();
+            //     return new TokenInfo(OR_ASSIGN, line);
+            // }
+            // else if (ch == '|') {
+            //     nextCh();
+            //     return new TokenInfo(LOGICAL_OR, line);
+            // }
+            // else{
+                return new TokenInfo(BITWISE_OR, line);
+            // }
+        case '~':
+            nextCh();
+            return new TokenInfo(COMPLEMENT, line);
         case '>':
             nextCh();
             if (ch == '>')
