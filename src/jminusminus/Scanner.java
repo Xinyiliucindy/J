@@ -140,6 +140,26 @@ class Scanner {
                     return new TokenInfo(BITXOR, line);
                 }
             }
+            // ignore all chars in /*...*/
+            else if (ch == '*') {      
+                nextCh();
+                while(ch != EOFCH){   
+                    if (ch == '*'){   
+                        nextCh();
+                        if(ch == '/'){  
+                            nextCh();
+                            break;
+                        }
+                        else{
+                            nextCh();
+                        }
+                    }
+                    else{
+                        nextCh();
+                    }
+                  
+                }
+            }
             else {
                 moreWhiteSpace = false;
             }
