@@ -28,6 +28,7 @@ enum TokenKind {
     SSLEFT("<<"), SSRIGHT(">>"), USRIGHT(">>>"),    // step 0   xinyi
     BITWISE_OR("|"), COMPLEMENT("~"),        // step 0       gengxingguang
     BITXOR("^"),                // step 0   yaoyao
+    
 
 
     // Separators

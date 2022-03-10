@@ -1019,8 +1019,8 @@ public class Parser {
      * Parse a conditional-and expression.
      * 
      * <pre>
-     *   conditionalAndExpression ::= equalityExpression // level 10
-     *                                  {LAND equalityExpression}
+     *       conditionalAndExpression ::= bitwiseOrExpression    // level 10
+     *                               { && bitwiseOrExpression}
      * </pre>
      * 
      * @return an AST for a conditionalExpression.
@@ -1029,10 +1029,10 @@ public class Parser {
     private JExpression conditionalAndExpression() {
         int line = scanner.token().line();
         boolean more = true;
-        JExpression lhs = bitXorExpression();
+        JExpression lhs = bitwiseOrExpression();
         while (more) {
             if (have(LAND)) {
-                lhs = new JLogicalAndOp(line, lhs, bitXorExpression());
+                lhs = new JLogicalAndOp(line, lhs, bitwiseOrExpression());
             } else {
                 more = false;
             }
@@ -1040,15 +1040,42 @@ public class Parser {
         return lhs;
     }
 
+
     /**
      * Parse an equality expression.
      * 
      * <pre>
-     *   bitXorExpression ::= equalityExpression // level 8
-     *                    // {BITXOR equalityExpression}
+     *  bitwiseOrExpression  ::= bitXorExpression       // level 9
+     *                               {BITWISE_OR bitXorExpression}
      * </pre>
      * 
-     * @return an AST for an equalityExpression.
+     * @return an AST for an bitwiseOrExpression.
+     */
+
+    private JExpression bitwiseOrExpression() {
+        int line = scanner.token().line();
+        boolean more = true;
+        JExpression lhs = bitXorExpression();
+        while (more) {
+            if (have(BITWISE_OR)) {
+                lhs = new JBitwiseOrOp(line, lhs, bitXorExpression());
+            } else {
+                more = false;
+            }
+        }
+        return lhs;
+
+    }
+
+    /**
+     * Parse an bitXor expression.
+     * 
+     * <pre>
+     *           bitXorExpression ::= equalityExpression //level 8
+     *                                   {BITXOR equalityExpression}
+     * </pre>
+     * 
+     * @return an AST for an bitXor expression.
      */
     private JExpression bitXorExpression() {
         int line = scanner.token().line();
@@ -1062,33 +1089,6 @@ public class Parser {
             }
         }
         return lhs;
-    }
-
-
-    /**
-     * Parse an equality expression.
-     * 
-     * <pre>
-     * bitwiseOrExpression  ::= equalityExpression//level 7
-     *                          {BITWISE_OR equalityExpression}
-     * </pre>
-     * 
-     * @return an AST for an equalityExpression.
-     */
-
-    private JExpression bitwiseOrExpression() {
-        int line = scanner.token().line();
-        boolean more = true;
-        JExpression lhs = equalityExpression();
-        while (more) {
-            if (have(BITWISE_OR)) {
-                lhs = new JBitwiseOrOp(line, lhs, equalityExpression());
-            } else {
-                more = false;
-            }
-        }
-        return lhs;
-
     }
 
 

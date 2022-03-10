@@ -115,29 +115,9 @@ class JNegateOp extends JUnaryExpression {
 
 class JPromoteOp extends JUnaryExpression {
 
-    /**
-     * Constructs an AST node for a negation expression given its line number,
-     * and the operand.
-     * 
-     * @param line
-     *            line in which the negation expression occurs in the source
-     *            file.
-     * @param arg
-     *            the operand.
-     */
-
     public JPromoteOp(int line, JExpression arg) {
         super(line, "+", arg);
     }
-
-    /**
-     * Analyzing the negation operation involves analyzing its operand, checking
-     * its type and determining the result type.
-     * 
-     * @param context
-     *            context in which names are resolved.
-     * @return the analyzed (and possibly rewritten) AST subtree.
-     */
 
     public JExpression analyze(Context context) {
         arg = arg.analyze(context);
@@ -146,18 +126,9 @@ class JPromoteOp extends JUnaryExpression {
         return this;
     }
 
-    /**
-     * Generating code for the negation operation involves generating code for
-     * the operand, and then the negation instruction.
-     * 
-     * @param output
-     *            the code emitter (basically an abstraction for producing the
-     *            .class file).
-     */
-
     public void codegen(CLEmitter output) {
         arg.codegen(output);
-        output.addNoArgInstruction(IADD);     // IADD: add init, from https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-6.html  --xinyi
+        output.addNoArgInstruction(INEG);     // IADD: add init, from https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-6.html  --xinyi
      }
 
 }

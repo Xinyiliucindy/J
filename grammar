@@ -72,42 +72,65 @@ statementExpression ::= expression // but must have side-effect, eg i++
 
 expression ::= assignmentExpression
 
+// level 13 
 assignmentExpression ::= conditionalAndExpression  // must be a valid lhs
-                           [(ASSIGN | PLUS_ASSIGN | USR_ASSIGN
-                            | STAR_ASSIGN | MINUS_ASSIGN | AND_ASSIGN
-                            | DIV_ASSIGN | REM_ASSIGN | USR_ASSIGN
-                            | SSL_ASSIGN | SSR_ASSIGN
-                            | BITXOR_ASSIGN | BITWISE_OR_ASSIGN) assignmentExpression]
+                           [(ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN                            
+                            | STAR_ASSIGN | DIV_ASSIGN | REM_ASSIGN                       
+                            | SSL_ASSIGN | SSR_ASSIGN | USR_ASSIGN
+                            | AND_ASSIGN | BITXOR_ASSIGN | BITWISE_OR_ASSIGN) assignmentExpression]
 
-conditionalAndExpression ::= bitXorExpression  // level 10
-                               {LAND bitXorExpression}
+// level 12
+conditionalExpression ::= conditionalOrExpression
+                          [ QUESTION assignmentExpression : conditionalExpression]
 
+//level 11
+conditionalOrExpression ::= conditionalAndExpression 
+                          { LOGICAL_OR conditionalAndExpression}
+
+// level 10
+conditionalAndExpression ::= bitwiseOrExpression
+                          { LAND bitwiseOrExpression}
+
+// level 9
+// gengxingguang: added level 9
+bitwiseOrExpression  ::= bitXorExpression
+                            { BITWISE_OR bitXorExpression}
+
+// level 8
 // yaoyao: added level 8
-bitXorExpression ::= equalityExpression //level 8
-                          {BITXOR equalityExpression}
+bitXorExpression ::= andExpression
+                          { BITXOR andExpression}
 
-// gengxingguang: added level 7
-bitwiseOrExpression  ::= equalityExpression//level 7
-                            {BITWISE_OR equalityExpression}
+// level 7
+// nanjie: add level 7
+andExpression ::= equalityExpression
+                          { AND equalityExpression}
 
-equalityExpression ::= relationalExpression  // level 6
-                         {EQUAL relationalExpression}
+// level 6
+equalityExpression ::= relationalExpression  
+                         { EQUAL relationalExpression}
 
-relationalExpression ::= binaryshiftExpression       // level 5
+
+// level 5
+relationalExpression ::= binaryshiftExpression
                            [(GT | LE) binaryshiftExpression
                            | INSTANCEOF referenceType]
-                           
+
+// level 4               
 // xinyi: added level 4
-binaryshiftExpression ::= additiveExpression    // level 4
+binaryshiftExpression ::= additiveExpression
                           {(SSLEFT | SSRIGHT | USRIGHT)  additiveExpression}
 
-additiveExpression ::= multiplicativeExpression // level 3
+// level 3
+additiveExpression ::= multiplicativeExpression
                          {(PLUS | MINUS) multiplicativeExpression}
 
-multiplicativeExpression ::= unaryExpression       // level 2
+// level 2
+multiplicativeExpression ::= unaryExpression
                                {(STAR | DIV | REM) unaryExpression}  // xinyi: DIV, REM
 
-unaryExpression ::= INC unaryExpression  // level 1
+// level 1
+unaryExpression ::= INC unaryExpression
                   | MINUS unaryExpression
                   | PLUS unaryExpression            // zhidie: unary plus +
                   | COMPLEMENT  unaryExpression     // gengxingguang: complement ~
