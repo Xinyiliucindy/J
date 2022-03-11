@@ -1080,10 +1080,10 @@ public class Parser {
     private JExpression bitXorExpression() {
         int line = scanner.token().line();
         boolean more = true;
-        JExpression lhs = equalityExpression();
+        JExpression lhs = bitAndExpression();
         while (more) {
             if (have(BITXOR)) {
-                lhs = new JBitXorOp(line, lhs, equalityExpression());
+                lhs = new JBitXorOp(line, lhs, bitAndExpression());
             } else {
                 more = false;
             }
@@ -1092,6 +1092,32 @@ public class Parser {
     }
 
 
+    /**
+     * Parse a conditional-and expression.
+     * 
+     * <pre>
+     *   andExpression ::= equalityExpression       // level 7
+                          { AND equalityExpression}
+     * </pre>
+     * 
+     * @return an AST for a conditionalExpression.
+     */
+    private JExpression bitAndExpression() {
+        int line = scanner.token().line();
+        boolean more = true;
+        JExpression lhs = equalityExpression();
+        while (more) {
+            if (have(AND)) {
+                lhs = new JBitAndOp(line, lhs, equalityExpression());
+            } else {
+                more = false;
+            }
+        }
+        return lhs;
+    }
+
+
+    
     /**
      * Parse an equality expression.
      * 

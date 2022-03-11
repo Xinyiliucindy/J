@@ -102,7 +102,7 @@ bitXorExpression ::= andExpression
                           { BITXOR andExpression}
 
 // level 7
-// nanjie: add level 7
+// zoe: add level 7
 andExpression ::= equalityExpression
                           { AND equalityExpression}
 
