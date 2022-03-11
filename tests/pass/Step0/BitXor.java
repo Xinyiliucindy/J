@@ -9,6 +9,6 @@ public class BitXor {
     public static void main(String[] args) {
         int x = 3;
         int y = 234;
-        System.out.println(x + " ^ " + y + " = " + xor(x,y) );
+        System.out.println("Exclusive Or: " + x + " ^ " + y + " = " + xor(x,y) );
 	}
 }

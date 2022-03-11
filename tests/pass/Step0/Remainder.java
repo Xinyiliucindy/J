@@ -8,6 +8,8 @@ public class Remainder {
     }
 
     public static void main(String[] args) {
-        System.out.println(remainder(10, 3));
+        int x = 10;
+        int y = 3;
+        System.out.println("Remainder: " + x + " % " + y + " = " + remainder(x, y));
     }
 }

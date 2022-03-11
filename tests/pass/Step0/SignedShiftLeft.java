@@ -8,6 +8,8 @@ public class SignedShiftLeft {
     }
 
     public static void main(String[] args) {
-        System.out.println(shiftleft(10, 2));
+        int x = 10;
+        int y = 2;
+        System.out.println("Signed Shift Left: " + x + " << " + y + " = " + shiftleft(x, y));
     }
 }

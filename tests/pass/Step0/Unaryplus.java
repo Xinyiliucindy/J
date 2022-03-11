@@ -13,10 +13,12 @@ public class Unaryplus {
     }
 
     public static void main(String[] args) {		
+        System.out.println("Unary Plus: ");
+
 		int i = 2;
-		System.out.println("The value of i is " + Unaryplus(+i));
+		System.out.println(" + " + i + " = " + Unaryplus(+i));
 
         char ch = 'A';
-		System.out.println("The value of A is " + Unaryplus(+ch));
+		System.out.println(" + " + ch + " = " + Unaryplus(+ch));
 	}
 }

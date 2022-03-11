@@ -14,34 +14,54 @@ enum TokenKind {
     EOF("<EOF>"), 
 
     // Reserved words
-    ABSTRACT("abstract"), BOOLEAN("boolean"), CHAR("char"), CLASS("class"), 
-    ELSE("else"), EXTENDS("extends"), IF("if"), IMPORT("import"), 
-    INSTANCEOF("instanceof"), INT("int"), NEW("new"), PACKAGE("package"), 
+    //break,byte,case,catch,const,continue,default,do,double,final,fianlly,
+    //float,for,goto,implements,interface,long,native,short,strictfp,switch
+    //synchronize,throw,throws,transient,try,volatile
+    ABSTRACT("abstract"), BOOLEAN("boolean"), BREAK("break"), BYTE("byte"), 
+    CASE("case"), CATCH("catch"), CHAR("char"), CLASS("class"),  
+    CONST("const"), CONTINUE("continue"), DEFAULT("default"), DO("do"), 
+    DOUBLE("double"), ELSE("else"), EXTENDS("extends"), IF("if"), IMPORT("import"), 
+    FINAL("final"), FINALLY("finally"), FLOAT("float"), FOR("for"), GOTO("goto"),
+    IMPLEMENTS("implements"), INTERFACE("interface"),INSTANCEOF("instanceof"), 
+    INT("int"), LONG("long"), NATIVE("native"), NEW("new"), PACKAGE("package"), 
     PRIVATE("private"), PROTECTED("protected"), PUBLIC("public"), 
-    RETURN("return"), STATIC("static"), SUPER("super"), THIS("this"), 
-    VOID("void"), WHILE("while"), 
+    RETURN("return"), SHORT("short"), STATIC("static"), STRICTFP("strictfp"), 
+    SUPER("super"), SWITCH("switch"), SYNCHRONIZED("synchronize"), THIS("this"), 
+    THROW("THROW"), THROWS("throws"), TRANSIENT("transient"), TRY("try"), VOID("void"), 
+    VOLATILE("volatile"), WHILE("while"),
 
     // Operators
-    ASSIGN("="), DEC("--"), EQUAL("=="), GT(">"), INC("++"), LAND("&&"), 
-    LE("<="), LNOT("!"), MINUS("-"), PLUS("+"), PLUS_ASSIGN("+="), STAR("*"), 
-    DIV("/"), REM("%"),     // step 0   
-    SSLEFT("<<"), SSRIGHT(">>"), USRIGHT(">>>"),    // step 0   xinyi
-    BITWISE_OR("|"), COMPLEMENT("~"),        // step 0       gengxingguang
+    //AND,GT_EQUAL,LT,BITXOR_ASSIGN,NOT_EQUAL,MINUS_ASSIGN,STAR_ASSIGN,DIV_ASSIGN,REM_ASSIGN
+    //SSL_ASSIGN,SSR_ASSIGN,USR_ASSIGN,BITWISE_OR_ASSIGN,LOGICAL_OR,QUESTION
+    AND_ASSIGN("&="), ASSIGN("="), BITXOR_ASSIGN("^="), DEC("--"), 
+    EQUAL("=="), GT(">"), GT_EQUAL(">="), INC("++"), LAND("&&"), LE("<="), 
+    LNOT("!"), LT("<"), LOGICAL_OR("||"), MINUS("-"), MINUS_ASSIGN("-="), NOT_EQUAL("!="), 
+    QUESTION("?"), PLUS_ASSIGN("+="), STAR("*"), STAR_ASSIGN("*="), 
+    
+    DIV("/"), DIV_ASSIGN("/="), REM("%"), REM_ASSIGN("%="),    // step 0   
+    PLUS("+"),          // step 0   xiaodiezi
+    SSLEFT("<<"), SSL_ASSIGN("<<="), SSRIGHT(">>"), SSR_ASSIGN(">>="), USRIGHT(">>>"), USR_ASSIGN(">>>="),    // step 0   xinyi
+    BITWISE_OR("|"), BITWISE_OR_ASSIGN("|="), COMPLEMENT("~"),        // step 0       gengxingguang
     BITXOR("^"),                // step 0   yaoyao
-    AND("&"),                   // step 0   zoe
-
+    AND("and"),                 // step 0   zoe
 
     // Separators
     LPAREN("("), RPAREN(")"), LCURLY("{"), RCURLY("}"), LBRACK("["), 
-    RBRACK("]"), SEMI(";"), COMMA(","), DOT("."), 
+    RBRACK("]"), SEMI(";"), COMMA(","), DOT("."), COLON(":"),
 
     // Identifiers
+    //wait to update
     IDENTIFIER("<IDENTIFIER>"), 
 
     // Literals
+    //wait to update
     NULL("null"), FALSE("false"), TRUE("true"),
     INT_LITERAL("<INT_LITERAL>"), CHAR_LITERAL("<CHAR_LITERAL>"), 
     STRING_LITERAL("<STRING_LITERAL>");
+
+    // End of file
+    //wait to update
+
 
     /** The token's string representation. */
     private String image;
@@ -185,3 +205,8 @@ class TokenInfo {
     }
 
 }
+
+
+
+// 3.10  Reserved words, Operators, Separators  adding finish
+//       Indentifiers, Literals, EOF    not updated, check lexicalgramma

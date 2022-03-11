@@ -26,8 +26,9 @@ EXTENDS     ::= "extends"
 FINAL		::= "final"			// step	1
 FINALLY		::= "finally"		// step	1
 FLOAT		::= "float"			// step	1
-GOTO		::= "goto"			// step	1
 FALSE       ::= "false"
+FOR			::= "for"			// step 1
+GOTO		::= "goto"			// step	1
 IF          ::= "if"
 IMPLEMENTS	::= "implements"	// step	1
 IMPORT      ::= "import"
@@ -124,3 +125,4 @@ CHAR_LITERAL   ::= "'" (ESC | ~("'"|"\n"|"\r"|"\\")) "'"
 EOF            ::= "<end of file>"
 
 
+// 3.10 all tokens adding finish

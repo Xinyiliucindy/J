@@ -8,6 +8,8 @@ public class Division {
     }
 
     public static void main(String[] args) {
-        System.out.println(divide(15,3));
+        int x = 15;
+        int y = 2;
+        System.out.println("Division: " + x + " / " + y + " = " + divide(x,y));
     }
 }

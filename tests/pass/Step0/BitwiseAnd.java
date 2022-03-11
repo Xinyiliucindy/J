@@ -10,6 +10,6 @@ public class BitwiseAnd {
     public static void main(String[] args){
         int x = 5;
         int y = 241;
-        System.out.println(x + " & " + y + " = " + bitand(x,y) );
+        System.out.println("AND: "+ x + " & " + y + " = " + bitand(x,y));
     }
 }

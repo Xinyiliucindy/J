@@ -3,7 +3,9 @@ package junit;
 import javax.sound.midi.Soundbank;
 
 import junit.framework.TestCase;
-import pass.SignedShiftRight;
+// import pass.SignedShiftRight;
+import pass.*;
+import java.lang.System;
 
 public class SignedShiftRightTest extends TestCase{
     private SignedShiftRight ssright;
@@ -21,6 +23,7 @@ public class SignedShiftRightTest extends TestCase{
         this.assertEquals(ssright.shiftright(8, 2), 2);
         this.assertEquals(ssright.shiftright(-42, 1), -21);
         this.assertEquals(ssright.shiftright(127, 3), 15);
+        this.assertEquals(ssright.ssright(584, 9), 1);
     }
 }
 

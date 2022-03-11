@@ -1,8 +1,11 @@
 package junit;
 
 import junit.framework.TestCase;
-import pass.Unaryplus;
-public class UnaryPlusTest {
+// import pass.Unaryplus;
+import pass.*;
+import java.lang.System;
+
+public class UnaryPlusTest extends TestCase{
     private Unaryplus unaryplus;
 
     protected void setUp() throws Exception {
@@ -15,10 +18,14 @@ public class UnaryPlusTest {
     }
 
     public void testUnaryplus(){
-        int i =2;
-		char ch = 'A';
-		this.assertEquals(UPlus.uplus(+i), 2);
-		this.assertEquals(UPlus.uplus(+ch), 65);
+        int i = 2;
+        int j = -1;
+		char ch1 = 'A';
+        char ch2 = 'z';
+		this.assertEquals(unaryplus.uplus(+i), 2);
+        this.assertEquals(unaryplus.uplus(+j), -1);
+		this.assertEquals(unaryplus.uplus(+ch1), 65);
+        this.assertEquals(unaryplus.uplus(+ch2), 122);
     }
     
 }

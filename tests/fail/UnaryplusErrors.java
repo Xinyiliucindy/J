@@ -10,6 +10,8 @@ public class Unaryplus {
 		System.out.println(i + i);
 		i = +bool;
 		System.out.println(i+i+i);
+		i = 'a';
+		System.out.println(i);
     }
     
 }

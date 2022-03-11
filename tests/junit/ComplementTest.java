@@ -1,11 +1,13 @@
 package junit;
 
 import junit.framework.TestCase;
-import pass.Complement;
+// import pass.Complement;
+import pass.*;
+import java.lang.System;
 
 public class ComplementTest extends TestCase {
 	
-	Complement complement;
+	private Complement complement;
 
 
 	protected void setUp() throws Exception {
@@ -19,6 +21,7 @@ public class ComplementTest extends TestCase {
 
 	public void testBitwise() {
 
+		this.assertEquals(complement.complement(1), -1);
 		this.assertEquals(complement.complement(8), -9);
 		this.assertEquals(complement.complement(35), -36);
 		

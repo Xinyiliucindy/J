@@ -1,9 +1,12 @@
 package junit;
 
 import junit.framework.TestCase;
-import pass.BitwiseAnd;
+// import pass.BitwiseAnd;
+import pass.*;
+import java.lang.System;
 
 public class BitwiseAndTest extends TestCase {
+    
     private BitwiseAnd bitAnd;
     
     protected void setUp() throws Exception {
@@ -11,14 +14,14 @@ public class BitwiseAndTest extends TestCase {
         bitAnd = new BitwiseAnd();
     }
 
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
     public void testBitwiseAnd() {
         this.assertEquals(bitAnd.bitand(2, 3), 2);
-        this.assertEquals(bitAnd.bitand(255, 1), 1);
+        this.assertEquals(bitAnd.bitand(256, 1), 0);
         this.assertEquals(bitAnd.bitand(255, 255), 255);
-        this.assertEquals(bitAnd.bitand(127, 128), 0);
+        this.assertEquals(bitAnd.bitand(15, 1), 1);
+    }
+
+    protected void tearDown() throws Exception {
+        super.tearDown();
     }
 }
