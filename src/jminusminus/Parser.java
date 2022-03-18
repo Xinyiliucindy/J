@@ -4,6 +4,8 @@ package jminusminus;
 
 import java.util.ArrayList;
 
+import javafx.scene.effect.Blend;
+
 // import jminusminus.JMultiplyOp;
 // import jminusminus.JDivideOp;
 
@@ -641,6 +643,8 @@ public class Parser {
      *               | RETURN [expression] SEMI
      *               | SEMI 
      *               | statementExpression SEMI
+     *               | TRY block {CATCH block} [FINALLY block]
+     *               | THROW expression SEMI
      * </pre>
      * 
      * @return an AST for a statement.
@@ -669,7 +673,34 @@ public class Parser {
             }
         } else if (have(SEMI)) {
             return new JEmptyStatement(line);
-        } else { // Must be a statementExpression
+        } 
+        //step 2 try-catch-finally
+        else if(have(TRY)){
+            JBlock tryBlock = block();
+
+            //catch block list
+            ArrayList<JFormalParameter> catchParameters = new ArrayList<>();
+            ArrayList<JBlock> catchBlocks = new ArrayList<>();
+
+            if(see(CATCH)){
+                mustBe(LPAREN);
+                catchParameters.add(formalParameter());
+                mustBe(LPAREN);
+                catchBlocks.add(block());
+            }
+            JBlock finallyBlock = null;
+            if(have(FINALLY)){
+                finallyBlock = block();
+            }
+            return new JTryStatement(line, tryBlock, catchParameters, catchBlocks,finallyBlock);
+        }
+        //step 2 throw 
+        else if(have(THROW)){
+            JExpression throwExpression = expression();
+            mustBe(SEMI);
+            return new JthrowStatement(line, throwExpression);
+        }
+        else { // Must be a statementExpression
             JStatement statement = statementExpression();
             mustBe(SEMI);
             return statement;
