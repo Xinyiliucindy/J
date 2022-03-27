@@ -678,6 +678,7 @@ private JStatement blockStatement(): {
  * <pre>
  *   statement ::= block
  *               | IF parExpression statement [ELSE statement]
+ *               | FOR([forInit] SEMI [expression] SEMI [forUpdate]) statement
  *               | WHILE parExpression statement
  *               | RETURN [expression] SEMI
  *               | SEMI
@@ -713,7 +714,8 @@ private JStatement statement(): {
             <ELSE> alternate = statement()
         ]
         { statement = new JIfStatement(line, test, consequent, alternate); } |
-
+        <FOR> {line = token.beginLine; } 
+        { statement = new JForStatement(line,initfor,expr,updatefor,body); }|
         <WHILE> { line = token.beginLine; }
         test = parExpression()
         body = statement()
