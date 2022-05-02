@@ -670,8 +670,9 @@ public class Parser {
 
      private JMember interfaceMemberDecl(ArrayList<String> mods) {
         int line = scanner.token().line();
-
-
+        JMember interfaceMemberDecl = null;
+        
+        return interfaceMemberDecl;
      }
 
 
