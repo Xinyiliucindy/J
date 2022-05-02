@@ -1408,7 +1408,7 @@ public class Parser {
                 lhs = new JDivideOp(line, lhs, unaryExpression());
             }
             else if (have(REM)) {
-                lhs = new JRemainOp(line, lhs, unaryExpression());
+                lhs = new JRemainderOp(line, lhs, unaryExpression());
             } 
             else {
                 more = false;
