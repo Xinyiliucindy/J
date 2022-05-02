@@ -56,7 +56,7 @@ enum TokenKind {
     // Literals
     //wait to update
     NULL("null"), FALSE("false"), TRUE("true"),
-    INT_LITERAL("<INT_LITERAL>"), CHAR_LITERAL("<CHAR_LITERAL>"), 
+    INT_LITERAL("<INT_LITERAL>"), CHAR_LITERAL("<CHAR_LITERAL>"), DOUBLE_LITERAL("<DOUBLE_LITERAL>"),
     STRING_LITERAL("<STRING_LITERAL>");
 
     // End of file

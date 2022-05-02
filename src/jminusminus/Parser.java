@@ -288,9 +288,9 @@ public class Parser {
      * 
      * @return true iff we're looking at a basic type; false otherwise.
      */
-
+    
     private boolean seeBasicType() {
-        return (see(BOOLEAN) || see(CHAR) || see(INT));
+        return (see(BOOLEAN) || see(CHAR) || see(INT) || see(DOUBLE));
     }
 
     /**
@@ -309,7 +309,7 @@ public class Parser {
             return true;
         } else {
             scanner.recordPosition();
-            if (have(BOOLEAN) || have(CHAR) || have(INT)) {
+            if (have(BOOLEAN) || have(CHAR) || have(INT)||have(DOUBLE)) {
                 if (have(LBRACK) && see(RBRACK)) {
                     scanner.returnToPosition();
                     return true;
@@ -1010,7 +1010,9 @@ public class Parser {
             return Type.BOOLEAN;
         } else if (have(CHAR)) {
             return Type.CHAR;
-        } else if (have(INT)) {
+        } else if (have(DOUBLE)){
+            return Type.DOUBLE;
+        }else if (have(INT)) {
             return Type.INT;
         } else {
             reportParserError("Type sought where %s found", scanner.token()
@@ -1106,13 +1108,22 @@ public class Parser {
      * 
      * @return an AST for an assignmentExpression.
      */
-
+    //XingGuang Geng assignment 
     private JExpression assignmentExpression() {
         int line = scanner.token().line();
-        JExpression lhs = conditionalExpression();
+        JExpression lhs = conditionalAndExpression();
         if (have(ASSIGN)) {
             return new JAssignOp(line, lhs, assignmentExpression());
-        } else if (have(PLUS_ASSIGN)) {
+        }else if(have(STAR_ASSIGN)){
+            return new JMultiAssignOp(line,lhs,assignmentExpression());
+        } else if(have(MINUS_ASSIGN)){
+            return new JMinusAssignOp(line,lhs,assignmentExpression());
+        } else if(have(REM_ASSIGN)){
+            return new JRemAssignOp(line,lhs,assignmentExpression());
+        }else if(have(DIV_ASSIGN)){
+            return new JDivAssignOp(line,lhs,assignmentExpression());
+        }
+        else if (have(PLUS_ASSIGN)) {
             return new JPlusAssignOp(line, lhs, assignmentExpression());
         } else {
             return lhs;
@@ -1678,7 +1689,9 @@ public class Parser {
         int line = scanner.token().line();
         if (have(INT_LITERAL)) {
             return new JLiteralInt(line, scanner.previousToken().image());
-        } else if (have(CHAR_LITERAL)) {
+        } else if(have(DOUBLE_LITERAL)){
+            return new JLiteralDouble(line, scanner.previousToken().image());
+        }else if (have(CHAR_LITERAL)) {
             return new JLiteralChar(line, scanner.previousToken().image());
         } else if (have(STRING_LITERAL)) {
             return new JLiteralString(line, scanner.previousToken().image());
