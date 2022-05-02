@@ -153,7 +153,7 @@ TOKEN: {
 | <CLASS: "class">
 | <CONST: "const"> //step 3
 | <CONTINUE: "continue"> //step 3
-| <DEFAULT: "default"> //step 3
+
 | <DO: "do"> //step 3
 | <DOUBLE: "double"> //step 3
 | <ELSE: "else">
@@ -200,7 +200,7 @@ TOKEN: {
 TOKEN: {
   <PLUS: "+">
 | <ASSIGN: "=">
-| <DEC: "--">
+
 | <EQUAL: "==">
 | <GT: ">">
 | <GT_EQUAL: ">="> //step 3
@@ -261,10 +261,15 @@ TOKEN: {
 
 // Literals
 TOKEN: {
-  <INT_LITERAL: ("0" | <NON_ZERO_DIGIT> (<DIGIT>)*) >
+ <#EXPONENT: ["e","E"](["+","-"])?>
+| <#DOUBLE_END: ["d","D"]>
+| <DOUBLE_LITERAL: "."(<DIGIT>)* (<EXPONENT>(<DIGIT>)*(<DOUBLE_END>)?|(<DOUBLE_END>)?) 
+                  |(<DIGIT>)* "."(<DIGIT>)* (<EXPONENT>(<DIGIT>)*(<DOUBLE_END>)?|(<DOUBLE_END>)?) >
+| <INT_LITERAL: ("0" | <NON_ZERO_DIGIT> (<DIGIT>)*) >
 | <CHAR_LITERAL: "'" (<ESC> | ~["'","\\","\n","\r"]) "'" >
 | <STRING_LITERAL: "\"" (<ESC> | ~["\"","\\","\n","\r"])* "\"" >
 | <#ESC: "\\" ["n","t","b","r","f","\\","'","\""] >
+
 }
 
 // For anything else, we return an ERROR token. Without this 
@@ -714,8 +719,7 @@ private JStatement statement(): {
             <ELSE> alternate = statement()
         ]
         { statement = new JIfStatement(line, test, consequent, alternate); } |
-        <FOR> {line = token.beginLine; } 
-        { statement = new JForStatement(line,initfor,expr,updatefor,body); }|
+
         <WHILE> { line = token.beginLine; }
         test = parExpression()
         body = statement()
@@ -741,6 +745,7 @@ private JStatement statement(): {
     }
     { return statement; }
 }
+
 
 /**
  * Parse formal parameters.
@@ -1063,6 +1068,7 @@ private Type basicType(): {
     try {
         <BOOLEAN> { type = Type.BOOLEAN; } |
         <CHAR> { type = Type.CHAR; } |
+        <DOUBLE> { type = Type.DOUBLE; } |
         <INT> { type = Type.INT; }
     }
     catch (ParseException e) {
@@ -1177,7 +1183,7 @@ private JExpression expression(): {
  *   assignmentExpression ::= 
  *       conditionalAndExpression                // level 13
  *           [( ASSIGN       // must be valid lhs
- *            | PLUS_ASSIGN 
+ *            | PLUS_ASSIGN |STAR_ASSIGN|DIV_ASSIGN|MINUS_ASSIGN|REM_ASSIGN
  *            )
  *            assignmentExpression]
  * </pre>
@@ -1196,7 +1202,23 @@ private JExpression assignmentExpression(): {
             <ASSIGN>
             rhs = assignmentExpression()
             { lhs = new JAssignOp(line, lhs, rhs); } |
+
+            <STAR_ASSIGN>
+            rhs = assignmentExpression()
+            { lhs = new JMultiAssignOp(line, lhs, rhs); } |
+
+            <DIV_ASSIGN>
+            rhs = assignmentExpression()
+            { lhs = new JDivAssignOp(line, lhs, rhs); } |
             
+            <MINUS_ASSIGN>
+            rhs = assignmentExpression()
+            { lhs = new JMinusAssignOp(line, lhs, rhs); } |
+
+            <REM_ASSIGN>
+            rhs = assignmentExpression()
+            { lhs = new JRemAssignOp(line, lhs, rhs); } |
+
             <PLUS_ASSIGN>
             rhs = assignmentExpression()
             { lhs = new JPlusAssignOp(line, lhs, rhs); }
@@ -1361,9 +1383,15 @@ private JExpression multiplicativeExpression(): {
     try {
         lhs = unaryExpression() { line = lhs.line(); }
         (
-            <STAR>
+            <STAR> 
             rhs = unaryExpression()
-            { lhs = new JMultiplyOp(line, lhs, rhs); }
+            { lhs = new JMultiplyOp( line, lhs, rhs ); } |
+			<DIV>
+			rhs = unaryExpression()
+			{ lhs = new JDivideOp( line, lhs, rhs ); } |
+			<REM>
+			rhs = unaryExpression()
+			{ lhs = new JRemainderOp( line, lhs, rhs ); }
         )*
     }
     catch (ParseException e) {
@@ -1727,6 +1755,9 @@ private JExpression literal(): {
     try {
         <INT_LITERAL>
         { expr = new JLiteralInt(token.beginLine, token.image); } |
+
+        <DOUBLE_LITERAL>
+        { expr = new JLiteralDouble(token.beginLine, token.image); } |
 
         <CHAR_LITERAL>
         { expr = new JLiteralChar(token.beginLine, token.image); } |
