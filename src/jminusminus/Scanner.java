@@ -134,7 +134,7 @@ class Scanner {
                 nextCh();
                 if (ch == '/') {
                     // CharReader maps all new lines to '\n'
-                    while (ch != '\n' && ch != EOFCH) {
+                    while (ch != '\n' && ch != EOFCH) {                 // implementation of "//"
                         nextCh();
                     }
                 

@@ -406,7 +406,12 @@ public class Parser {
 
     private JAST typeDeclaration() {
         ArrayList<String> mods = modifiers();
-        return classDeclaration(mods);
+        if (see(INTERFACE)) {
+            return interfaceDeclaration(mods);
+        }
+        else {
+            return classDeclaration(mods);
+        }
     }
 
     /**
@@ -481,9 +486,9 @@ public class Parser {
      * Parse a class declaration.
      * 
      * <pre>
-     *   classDeclaration ::= CLASS IDENTIFIER 
-     *                        [EXTENDS qualifiedIdentifier] 
-     *                        classBody
+        classDeclaration ::= CLASS IDENTIFIER [EXTENDS qualifiedIdentifier] 
+                            [IMPLEMENTS qualifiedIdentifier {COMMA qualifiedIdentifier}]
+                            classBody
      * </pre>
      * 
      * A class which doesn't explicitly extend another (super) class implicitly
@@ -505,16 +510,26 @@ public class Parser {
         } else {
             superClass = Type.OBJECT;
         }
+
+        // a class can implements one or more than one interfaces
+        ArrayList<Type> implementedInterfaces = new ArrayList<>();
+        if (have(IMPLEMENTS)) {
+            do {
+                implementedInterfaces.add(qualifiedIdentifier());
+            }while(have(COMMA));
+        }
+
         return new JClassDeclaration(line, mods, name, superClass, classBody());
     }
 
-    /**
+        /**
      * Parse a class body.
      * 
      * <pre>
-     *   classBody ::= LCURLY
-     *                   {modifiers memberDecl}
-     *                 RCURLY
+     *   classBody ::= LCURLY 
+     *                  { SEMI | STATIC block
+                                | block | modifiers memberDecl} 
+                        RCURLY
      * </pre>
      * 
      * @return list of members in the class body.
@@ -524,7 +539,105 @@ public class Parser {
         ArrayList<JMember> members = new ArrayList<JMember>();
         mustBe(LCURLY);
         while (!see(RCURLY) && !see(EOF)) {
-            members.add(memberDecl(modifiers()));
+            int line = scanner.token().line();
+            // SEMI
+            if (have(SEMI)){ }      // what's the difference between HAVE and SEE?
+            
+            // static block
+            else if (have(STATIC)) {
+                line = scanner.token().line();
+                ArrayList<JStatement> statements = new ArrayList<JStatement>();
+                if (have(LCURLY)) {
+                    while(!see(RCURLY) && !see(EOF)) {
+                        statements.add(statement());
+                        JBlock body = block();          // todo: modify JInitializationBlock.java   take care of the args
+                        members.add(new JInitializationBlock(line, true, body));
+                    }
+                }
+                else {
+                    ArrayList<String> mods = modifiers();
+                    mods.add("static");
+                    if (seeLocalVariableDeclaration()) {
+                        members.add(memberDecl(mods));
+                    }
+                    else{
+                        statements.add(statement());
+                    }
+                }
+            }
+
+            // instance initialization block
+            else if (have(LCURLY)) {
+                while(!see(RCURLY) && !see(EOF)) {
+                    line = scanner.token().line();
+                    JBlock body = block();  // body will be used in the args in JinitBlock below
+                    members.add(new JInitializationBlock(line, false, body));    
+                }
+            }
+            
+            // modifiers member declaration
+            else {
+                members.add(memberDecl(modifiers()));
+            }
+        }
+
+        mustBe(RCURLY);
+        return members;
+    }
+
+
+    /**
+     * Parse an interface declaration.
+     * 
+     * <pre>
+            interfaceDeclaration ::= INTERFACE IDENTIFIER  // can't be final                                        // step 2              
+                         [EXTENDS qualifiedIdentifier {COMMA qualifiedIdentifier}]
+                         interfaceBody 
+     * </pre>
+     * 
+     * A class which doesn't explicitly extend another (super) class implicitly
+     * extends the superclass java.lang.Object.
+     * 
+     * @param mods
+     *            the interface modifiers.
+     * @return an AST for a interfaceDeclaration.
+     */
+
+    private JInterfaceDeclaration interfaceDeclaration(ArrayList<String> mods) {
+        int line = scanner.token().line();
+        mustBe(INTERFACE);
+        mustBe(IDENTIFIER);
+        
+        String name = scanner.previousToken().image();
+        ArrayList<Type> superInterfaces = new ArrayList<>();
+
+        // an interface can extend one or more than one superinterfaces. 
+        if (have(EXTENDS)) {
+            do{
+                superInterfaces.add(qualifiedIdentifier());
+            }while (have(COMMA));
+        }
+        return new JInterfaceDeclaration(line, mods, name, superInterfaces, interfaceBody());
+    }
+
+    /**
+     * Parse an interface body.
+     * 
+     * <pre>
+     *   interfaceBody ::= LCURLY { SEMI | modifier interfaceMemberDecl } RCURLY   
+     * </pre>
+     * 
+     * @return list of members in the class body.
+     */
+
+    private ArrayList<JMember> interfaceBody() {
+        ArrayList<JMember> members = new ArrayList<JMember>();
+        mustBe(LCURLY);
+        while (!see(RCURLY) && !see(EOF)) {
+            if (have(SEMI)) { }
+            else {
+                members.add(memberDecl(modifiers()));
+            }
         }
         mustBe(RCURLY);
         return members;
@@ -993,7 +1106,7 @@ public class Parser {
      * 
      * <pre>
      *   assignmentExpression ::= 
-     *       conditionalAndExpression // level 13
+     *       conditionalExpression // level 13
      *           [( ASSIGN  // conditionalExpression
      *            | PLUS_ASSIGN // must be valid lhs
      *            )

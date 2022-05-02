@@ -7,15 +7,30 @@ compilationUnit ::= [PACKAGE qualifiedIdentifier SEMI]
 
 qualifiedIdentifier ::= IDENTIFIER {DOT IDENTIFIER}
 
-typeDeclaration ::= modifiers classDeclaration
+typeDeclaration ::= typeDeclarationModifier (classDeclaration | interfaceDeclaration) | SEMI            // step 2
 
-modifiers ::= {PUBLIC | PROTECTED | PRIVATE | STATIC | ABSTRACT}
+typeDeclarationModifier ::= {PUBLIC | PROTECTED | PRIVATE | STATIC | ABSTRACT | FINAL | STRICTFP }      // step 2  
 
-classDeclaration ::= CLASS IDENTIFIER 
-                       [EXTENDS qualifiedIdentifier] 
+classDeclaration ::= CLASS IDENTIFIER [EXTENDS qualifiedIdentifier]                                     // step 2  
+                      [IMPLEMENTS qualifiedIdentifier {COMMA qualifiedIdentifier}]
                        classBody
 
-classBody ::= LCURLY {modifiers memberDecl} RCURLY
+classBody ::= LCURLY { SEMI | STATIC block
+                      | block | modifiers memberDecl} RCURLY
+
+interfaceDeclaration ::= INTERFACE IDENTIFIER  // can't be final                                        // step 2              
+                         [EXTENDS qualifiedIdentifier {COMMA qualifiedIdentifier}]
+                         interfaceBody 
+
+interfaceBody ::= LCURLY { SEMI | modifier interfaceMemberDecl } RCURLY                                 // step 2
+
+interfaceMemberDecl ::= classDeclaration  // inner class                                                // step 2
+                       | interfaceDeclaration  // inner interface
+                       | (VOID | type) <identifier>   // method
+                          formalParameters { LBRACK RBRACK } [THROWS qualifiedIdentifier {COMMA qualifiedIdentifier}] SEMI
+                       | type variableDeclarators SEMI   // fields; must have inits
+
+modifiers ::= {PUBLIC | PROTECTED | PRIVATE | STATIC | ABSTRACT}                                        // step 2
 
 memberDecl ::= IDENTIFIER            // constructor
                  formalParameters block
@@ -73,7 +88,7 @@ statementExpression ::= expression // but must have side-effect, eg i++
 expression ::= assignmentExpression
 
 // level 13 
-assignmentExpression ::= conditionalAndExpression  // must be a valid lhs
+assignmentExpression ::= conditionalExpression  // must be a valid lhs
                            [(ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN                            
                             | STAR_ASSIGN | DIV_ASSIGN | REM_ASSIGN                       
                             | SSL_ASSIGN | SSR_ASSIGN | USR_ASSIGN
