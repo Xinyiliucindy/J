@@ -422,6 +422,7 @@ private ArrayList<String> modifiers(): {
  * <pre>
  *   classDeclaration ::= CLASS IDENTIFIER
  *                        [EXTENDS qualifiedIdentifier]
+                          [IMPLEMENTS qualifiedIdentifier {COMMA qualifiedIdentifier}]
  *                        classBody
  * </pre>
  * 
@@ -436,6 +437,7 @@ private JClassDeclaration classDeclaration(ArrayList<String> mods): {
     String name = "";
     Type superClass = Type.OBJECT;
     ArrayList<JMember> classBody = null;
+    ArrayList<> implementedInterfaces = new ArrayList<>();
 }
 {
     try {
@@ -443,6 +445,14 @@ private JClassDeclaration classDeclaration(ArrayList<String> mods): {
         <IDENTIFIER> { name = token.image; }
         [
             <EXTENDS> superClass = qualifiedIdentifier()
+        ]
+        [
+            <IMPLEMENTS>
+            { implementedInterfaces.add(qualifiedIdentifier()); }
+            (
+                <COMMA>
+                {implementedInterfaces.add(qualifiedIdentifier()); }
+            )*
         ]
         classBody = classBody()
     }
@@ -459,7 +469,8 @@ private JClassDeclaration classDeclaration(ArrayList<String> mods): {
  * 
  * <pre>
  *   classBody ::= LCURLY
- *                   {modifiers memberDecl}
+ *                   { SEMI | STATIC block
+                    | block | modifiers memberDecl}
  *                 RCURLY
  * </pre>
  * 
@@ -475,8 +486,20 @@ private ArrayList<JMember> classBody(): {
     try {
         <LCURLY>
         (
-            mods = modifiers()
-            aMember = memberDecl(mods) { members.add(aMember); }
+            <SEMI> |
+            LOOKAHEAD(<STATIC> <LCURLY>) 
+            <STATIC>
+            (
+
+            ) |
+            LOOKAHEAD(<LCURLY>) 
+            (
+                
+            ) |
+            (
+                mods = modifiers()
+                aMember = memberDecl(mods) { members.add(aMember); }
+            )
         )*
         <RCURLY>
     }
@@ -485,6 +508,110 @@ private ArrayList<JMember> classBody(): {
     }
     { return members; }
 }
+
+  /**
+     * Parse an interface declaration.
+     * 
+     * <pre>
+            interfaceDeclaration ::= INTERFACE IDENTIFIER  // can't be final                                        // step 2              
+                         [EXTENDS qualifiedIdentifier {COMMA qualifiedIdentifier}]
+                         interfaceBody 
+     * </pre>
+     * 
+     * A class which doesn't explicitly extend another (super) class implicitly
+     * extends the superclass java.lang.Object.
+     * 
+     * @param mods
+     *            the interface modifiers.
+     * @return an AST for a interfaceDeclaration.
+     */
+
+private JInterfaceDeclaration interfaceDeclaration(ArrayList<String> mods): {
+    int line = 0;
+    ArrayList<JMember> interfaceBody = null;
+    String name = "";
+    ArrayList<Type> superInterfaces = new ArrayList<>();
+}
+{
+    try{
+        <INTERFACE> { line = token.beginLine; }
+        <IDENTIFIER> { name = token.image; }
+        [
+            <EXTENDS>
+            {superInterfaces.add(qualifiedIdentifier());}
+            (
+                <COMMA>
+                {superInterfaces.add(qualifiedIdentifier());}
+            )*
+        ]
+        interfaceBody = interfaceBody()
+    }
+    catch(ParseException e) {
+        recoverFromError(new int[] { SEMI, EOF }, e);
+    }
+    { return new JInterfaceDeclaration(line, mods, name, superInterfaces, interfaceBody()); }
+}
+
+
+/**
+* Parse an interface body.
+* 
+* <pre>
+*   interfaceBody ::= LCURLY { SEMI | modifier interfaceMemberDecl } RCURLY   
+* </pre>
+* 
+* @return list of members in the class body.
+*/
+
+private ArrayList<JMember> interfaceBody() {
+    ArrayList<JMember> members = new ArrayList<JMember>();
+    ArrayList<String> mods = null;
+    JMember aMember        = null;
+}
+{
+    try {
+        <LCURLY>
+        (
+            <SEMI> |
+            (
+                mods = modifiers()
+                aMember = memberDecl(mods) { members.add(aMember); }
+            )
+        )*
+        <RCURLY>
+    }
+    catch(ParseException e) {
+        recoverFromError(new int[] { SEMI, EOF }, e);
+    }
+    { return new members; }
+}
+
+/**
+* Parse an interface member declaration.
+* 
+* <pre>
+*    interfaceMemberDecl ::= classDeclaration  // inner class                                                // step 2
+                | interfaceDeclaration  // inner interface
+                | (VOID | type) <identifier>   // method
+                    formalParameters { LBRACK RBRACK } [THROWS qualifiedIdentifier {COMMA qualifiedIdentifier}] SEMI
+                | type variableDeclarators SEMI   // fields; must have inits
+* </pre>
+* @param mods
+*            the interface member modifiers.
+*  @return an AST for a interface memberDecl.
+*/
+
+private JMember interfaceMemberDecl(ArrayList<String> mods) {
+
+}
+{
+    try {
+
+    }
+}
+
+
+
 
 /**
  * Parse a member declaration.

@@ -123,29 +123,27 @@ public class JInterfaceDeclaration extends JAST implements JTypeDecl{
      *            the parent (compilation unit) context.
      */
     public void preAnalyze(Context context) {
-        // // Construct a interface context
-        // this.context = new ClassContext(this, context);
+        // Construct a interface context
+        this.context = new ClassContext(this, context);
 
-        // // resolve superinterfaces
-        // for(int i = 0; i < superInterfaces.size(); i++){
-        //     superInterfaces.set(i, superInterfaces.get(i).resolve(this.context));
-        // }
+        // resolve superinterfaces
+        for(int i = 0; i < superInterfaces.size(); i++){
+            superInterfaces.set(i, superInterfaces.get(i).resolve(this.context));
+        }
 
-        // // Creating a partial interface in memory can result in a
-        // // java.lang.VerifyError if the semantics below are
-        // // violated, so we can't defer these checks to analyze()
-        // while (superType != null) {
-        //     thisType.checkAccess(line, superType);
-        // }
-        // if (superType.isFinal()) {
-        //     JAST.compilationUnit.reportSemanticError(line,
-        //     "Cannot extend a final type: %s", superType.toString());
-        // }
+        // Creating a partial interface in memory can result in a
+        // java.lang.VerifyError if the semantics below are
+        // violated, so we can't defer these checks to analyze()
+        while (superType != null) {
+            thisType.checkAccess(line, superType);
+        }
+        if (superType.isFinal()) {
+            JAST.compilationUnit.reportSemanticError(line,
+            "Cannot extend a final type: %s", superType.toString());
+        }
 
-        // // Create the (partial) interface
-        // CLEmitter partial = new CLEmitter(false);
-
-
+        // Create the (partial) interface
+        CLEmitter partial = new CLEmitter(false);
         
     }
 

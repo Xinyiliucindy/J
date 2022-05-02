@@ -32,7 +32,9 @@ interfaceMemberDecl ::= classDeclaration  // inner class                        
 
 modifiers ::= {PUBLIC | PROTECTED | PRIVATE | STATIC | ABSTRACT}                                        // step 2
 
-memberDecl ::= IDENTIFIER            // constructor
+memberDecl ::= classDeclaration       // inner class
+             | interfaceDeclaration   // inner interface
+                IDENTIFIER            // constructor
                  formalParameters block
              | (VOID | type) IDENTIFIER  // method
                  formalParameters

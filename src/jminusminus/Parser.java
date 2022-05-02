@@ -537,50 +537,60 @@ public class Parser {
 
     private ArrayList<JMember> classBody() {
         ArrayList<JMember> members = new ArrayList<JMember>();
+        // ArrayList<JBlock> IIB = new ArrayList<JBlock>();
+        // ArrayList<JBlock> StaticBlock = new ArrayList<JBlock>();
+        ArrayList<JStatement> statements = new ArrayList<JStatement>();
+
         mustBe(LCURLY);
         while (!see(RCURLY) && !see(EOF)) {
             int line = scanner.token().line();
             // SEMI
-            if (have(SEMI)){ }      // what's the difference between HAVE and SEE?
+            if (have(SEMI)){ }
             
-            // static block
-            else if (have(STATIC)) {
+            // IIB (instance initialization block) and static block
+            if (have(LCURLY)) {
                 line = scanner.token().line();
-                ArrayList<JStatement> statements = new ArrayList<JStatement>();
-                if (have(LCURLY)) {
-                    while(!see(RCURLY) && !see(EOF)) {
-                        statements.add(statement());
-                        JBlock body = block();          // todo: modify JInitializationBlock.java   take care of the args
-                        members.add(new JInitializationBlock(line, true, body));
-                    }
-                }
-                else {
-                    ArrayList<String> mods = modifiers();
-                    mods.add("static");
-                    if (seeLocalVariableDeclaration()) {
-                        members.add(memberDecl(mods));
-                    }
-                    else{
-                        statements.add(statement());
-                    }
-                }
-            }
-
-            // instance initialization block
-            else if (have(LCURLY)) {
                 while(!see(RCURLY) && !see(EOF)) {
                     line = scanner.token().line();
-                    JBlock body = block();  // body will be used in the args in JinitBlock below
-                    members.add(new JInitializationBlock(line, false, body));    
+                    JBlock body = block();
+                    members.add(new JInitializationBlock(line, false, body)); 
+                    // IIB.add(body);
                 }
+                mustBe(RCURLY);
             }
+            
+            // static block
+            // if (have(STATIC)) {
+            //     line = scanner.token().line();
+            //     // ArrayList<JStatement> statements = new ArrayList<JStatement>();
+                
+            //     if(see(LCURLY)) {
+            //         while(!see(RCURLY) && !see(EOF)) {
+            //             line = scanner.token().line();
+            //             statements.add(blockStatement());
+            //             JBlock body = block();
+            //             members.add(new JInitializationBlock(line, true, body));
+            //         }
+            //         mustBe(RCURLY);
+            //     }
+                // else {
+                //     ArrayList<String> mods = modifiers();
+                //     mods.add("static");
+                //     if (seeLocalVariableDeclaration()) 
+                //         members.add(memberDecl(mods));
+                    
+                //     else{
+                //         statements.add(statement());
+                //     }
+                // }
+            // }       
             
             // modifiers member declaration
             else {
                 members.add(memberDecl(modifiers()));
             }
         }
-
+        
         mustBe(RCURLY);
         return members;
     }
@@ -644,10 +654,34 @@ public class Parser {
     }
 
     /**
+     * Parse an interface member declaration.
+     * 
+     * <pre>
+     *    interfaceMemberDecl ::= classDeclaration  // inner class                                                // step 2
+                       | interfaceDeclaration  // inner interface
+                       | (VOID | type) <identifier>   // method
+                          formalParameters { LBRACK RBRACK } [THROWS qualifiedIdentifier {COMMA qualifiedIdentifier}] SEMI
+                       | type variableDeclarators SEMI   // fields; must have inits
+     * </pre>
+     * @param mods
+     *            the interface member modifiers.
+     *  @return an AST for a interface memberDecl.
+     */
+
+     private JMember interfaceMemberDecl(ArrayList<String> mods) {
+        int line = scanner.token().line();
+
+
+     }
+
+
+    /**
      * Parse a member declaration.
      * 
      * <pre>
-     *   memberDecl ::= IDENTIFIER            // constructor
+     *   memberDecl ::= classDeclaration        // inner class
+     *                | interfaceDeclaration    // inner interface
+     *                  IDENTIFIER            // constructor
      *                    formalParameters
      *                    block
      *                | (VOID | type) IDENTIFIER  // method

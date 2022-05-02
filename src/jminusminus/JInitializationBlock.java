@@ -13,7 +13,7 @@ public class JInitializationBlock extends JAST implements JMember{
     // private ArrayList<String> mods = new ArrayList<String>();
 
     /** If the block is static */
-    private boolean isStatic;
+    private boolean isStatic=false;
 
     /** Block */
     private JBlock body;
@@ -63,7 +63,7 @@ public class JInitializationBlock extends JAST implements JMember{
     }
 
     public void writeToStdOut(PrettyPrinter p) {
-        p.printf("<JInitializationBlock line=\"%d\">\n", this.line);
+        p.printf("<JInitializationBlock line=\"%d\">\n", line());
         p.indentRight();
         if(isStatic) {
             p.println("</Modifiers>");
@@ -73,11 +73,14 @@ public class JInitializationBlock extends JAST implements JMember{
             p.println("</Modifiers>");
         }
         
+        // System.out.println("-----------IIB begins here--------");
         body.writeToStdOut(p);
-
+        // System.out.println("-----------IIB ends here--------");
         p.indentLeft();
         p.println("</JInitializationBlock>");
         
+
+        // feel like sth wrong here, needs double check
     }
 
 

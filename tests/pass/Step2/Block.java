@@ -6,9 +6,9 @@ import java.lang.System;
 public class ABlock {
     
     // Static Block
-    static {
-        System.out.println("A static block");
-    }
+    // static {
+    //     System.out.println("A static block");
+    // }
 
     // IIB: Instance Initialization Block
     {
@@ -19,29 +19,30 @@ public class ABlock {
         System.out.println("A IIB 2");
     }
 
-    public ABlock(){
-        System.out.println("A Constructor called");
-    }
+    // Test for constructor and normal block, unnecessarily used for block init
+    // public ABlock(){
+    //     System.out.println("A Constructor called");
+    // }
 
-    public Hello(){
-        System.out.println("A Normal Block");
-    }
+    // public Hello(){
+    //     System.out.println("A Normal Block");
+    // }
 
 }
 
 
 public class BBlock extends ABlock {
-    static {
-        System.out.println("B static block");
-    }
+    // static {
+    //     System.out.println("B static block");
+    // }
 
     {
         System.out.println("B IIB 1");
     }
 
-    BBlock(){
-        System.out.println("B Constructor called");
-    }
+    // BBlock(){
+    //     System.out.println("B Constructor called");
+    // }
 
     {
         System.out.println("B IIB 2");

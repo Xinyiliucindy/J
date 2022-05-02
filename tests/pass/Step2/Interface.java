@@ -32,7 +32,7 @@ public class Dog implements Animal{
         System.out.println("Dogs are our friends.");
     }
 
-    public int numoflegs(){
+    public void NumofLegs(){
         int x;
         x = 4;
         System.out.println("Dogs have" + x + "legs.");
@@ -42,7 +42,7 @@ public class Dog implements Animal{
         Dog doggy = new Dog();
         doggy.eat();
         doggy.travel();
-        doggy.numoflegs();
+        doggy.NumofLegs();
         doggy.friend();
     }
 }
