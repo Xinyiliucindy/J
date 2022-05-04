@@ -3,6 +3,7 @@
 package jminusminus;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 import static jminusminus.CLConstants.*;
 
 /**
@@ -39,10 +40,10 @@ class JConstructorDeclaration extends JMethodDeclaration implements JMember {
      */
 
     public JConstructorDeclaration(int line, ArrayList<String> mods,
-            String name, ArrayList<JFormalParameter> params, JBlock body)
+            String name, ArrayList<JFormalParameter> params, ArrayList<TypeName> exceptions, JBlock body)
 
     {
-        super(line, mods, name, Type.CONSTRUCTOR, params, body);
+        super(line, mods, name, Type.CONSTRUCTOR, params, exceptions, body);
     }
 
     /**
@@ -100,11 +101,28 @@ class JConstructorDeclaration extends JMethodDeclaration implements JMember {
             this.context.nextOffset();
         }
 
+        // Resolve exception types
+        ArrayList<Type> exceptionTypes = new ArrayList<Type>();
+        exceptionTypes = exceptions.stream().map(x -> x.resolve(this.context))
+        .collect(Collectors.toCollection(ArrayList::new));
+        
+        // Add the exceptions into the context
+        if (!exceptionTypes.isEmpty()) {
+            for(Type exception : exceptionTypes) {
+                methodContext.addException(exception);
+            }
+        }
+                
+        // Convert the typenames for exceptions to jvmNames
+        exceptionJVMNames = this.exceptions.stream().map(x -> "java.lang." + x)
+                .collect(Collectors.toCollection(ArrayList::new));
+
         // Declare the parameters. We consider a formal parameter
         // to be always initialized, via a function call. 
         for (JFormalParameter param : params) {
-            LocalVariableDefn defn = new LocalVariableDefn(param.type(),
-                                             this.context.nextOffset());
+            Type paramType = param.type();
+            LocalVariableDefn defn = new LocalVariableDefn(paramType,
+                                             this.context.nextOffset(paramType));
             defn.initialize();
             this.context.addEntry(param.line(), param.name(), defn);
         }
@@ -126,7 +144,7 @@ class JConstructorDeclaration extends JMethodDeclaration implements JMember {
      */
 
     public void partialCodegen(Context context, CLEmitter partial) {
-        partial.addMethod(mods, "<init>", descriptor, null, false);
+        partial.addMethod(mods, "<init>", descriptor, exceptionJVMNames, false);
         if (!invokesConstructor) {
             partial.addNoArgInstruction(ALOAD_0);
             partial.addMemberAccessInstruction(INVOKESPECIAL,
@@ -145,18 +163,24 @@ class JConstructorDeclaration extends JMethodDeclaration implements JMember {
      */
 
     public void codegen(CLEmitter output) {
-        output.addMethod(mods, "<init>", descriptor, null, false);
+        output.addMethod(mods, "<init>", descriptor, exceptionJVMNames, false);
         if (!invokesConstructor) {
             output.addNoArgInstruction(ALOAD_0);
             output.addMemberAccessInstruction(INVOKESPECIAL,
                     ((JTypeDecl) context.classContext().definition())
                             .superType().jvmName(), "<init>", "()V");
-        }
-        // Field initializations
-        for (JFieldDeclaration field : definingClass
+
+            // Field initializations
+            for (JFieldDeclaration field : definingClass
                 .instanceFieldInitializations()) {
-            field.codegenInitializations(output);
+                field.codegenInitializations(output);
+           }
+
+            // Field initialization blocks
+            definingClass.codegenInstanceInitialization(output);                        
         }
+        
+
         // And then the body
         body.codegen(output);
         output.addNoArgInstruction(RETURN);
@@ -190,6 +214,15 @@ class JConstructorDeclaration extends JMethodDeclaration implements JMember {
                 p.indentLeft();
             }
             p.println("</FormalParameters>");
+        }
+        if (exceptions != null) {
+            p.println("<Exceptions>");
+            for (TypeName exception : exceptions) {
+                p.indentRight();
+                p.printf("<Exception type=%s\n", exception.toString());
+                p.indentLeft();
+            }
+            p.println("</Exceptions>");
         }
         if (body != null) {
             p.println("<Body>");

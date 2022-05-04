@@ -189,6 +189,7 @@ TOKEN: {
 | <THROW: "throw"> //step 3
 | <THROWS: "throws"> //step 3
 | <TRANSIENT: "transient"> //step 3
+
 | <TRY: "try"> //step 3
 | <TRUE: "true">
 | <VOID: "void">
@@ -200,7 +201,6 @@ TOKEN: {
 TOKEN: {
   <PLUS: "+">
 | <ASSIGN: "=">
-
 | <EQUAL: "==">
 | <GT: ">">
 | <GT_EQUAL: ">="> //step 3
@@ -544,29 +544,42 @@ private ArrayList<JMember> classBody(): {
     { return members; }
 }
 
+
+//step 3 Throws
 /**
  * Parse a member declaration.
  * 
  * <pre>
  *   memberDecl ::= IDENTIFIER            // constructor
  *                    formalParameters
+ *                    [THROWS qualifiedIdentifier {, qualifiedIdentifier}]
  *                    block
- *                | (VOID | type) IDENTIFIER  // method
+ *                  | STATIC block 
+ *                  | block
+ *                  | (VOID | type) IDENTIFIER  // method
  *                    formalParameters
+ *                    [THROWS qualifiedIdentifier {, qualifiedIdentifier}]
  *                    (block | SEMI)
- *                | type variableDeclarators SEMI 
+ *                  | type variableDeclarators SEMI 
  * </pre>
  * 
  * @param mods the class member modifiers.
  *
  * @return an AST for a memberDecl.
  */
-    
+
+
+
 private JMember memberDecl(ArrayList<String> mods): {
     int line = 0;
     Type type = null;
     String name = "";
     ArrayList<JFormalParameter> params = null;
+
+    //step 3 Throws for construct
+    TypeName exception = null;
+    ArrayList<TypeName> exceptions = new ArrayList<TypeName>();
+
     JBlock body = null;
     ArrayList<JVariableDeclarator> variableDeclarators = null;
     JMember memberDecl = null;
@@ -581,10 +594,25 @@ private JMember memberDecl(ArrayList<String> mods): {
                 name = token.image;
             }
             params = formalParameters()
+
+            //step 3 Throws
+            [
+                LOOKAHEAD(<THROWS>)
+                <THROWS>
+                exception = qualifiedIdentifier()
+                { exceptions.add(exception); }
+                (
+                    <COMMA>
+                    exception = qualifiedIdentifier()
+                    { exceptions.add(exception); }
+                )*
+            ]
+
+
             body = block()
             {
                 memberDecl = new JConstructorDeclaration(line, mods,
-                                                         name, params, body);
+                                                         name, params,exceptions, body);
             }
         ) |
         LOOKAHEAD((<VOID> | type()) <IDENTIFIER> <LPAREN>)
@@ -596,13 +624,27 @@ private JMember memberDecl(ArrayList<String> mods): {
             { line = token.beginLine; }
             <IDENTIFIER> { name = token.image; }
             params = formalParameters() 
+
+            //step 3 throws for void method and non void method         
+            [
+                LOOKAHEAD(<THROWS>)
+                <THROWS>
+                exception = qualifiedIdentifier()
+                { exceptions.add(exception); }
+                (
+                    <COMMA>
+                    exception = qualifiedIdentifier()
+                    { exceptions.add(exception); }
+                )*
+            ]
+
             (
                 body = block() |
                 <SEMI>
             )
             {
                 memberDecl = new JMethodDeclaration(line, mods, name,
-                                                    type, params, body);
+                                                    type, params,exceptions, body);
             }
         ) |
         (
@@ -687,6 +729,8 @@ private JStatement blockStatement(): {
  *               | WHILE parExpression statement
  *               | RETURN [expression] SEMI
  *               | SEMI
+ *               | TRY block {CATCH LPAREN FormalParameter RPAREN} [FINALLY block] // step 3 Try
+ *               | THROW expression SEMI //step 3 throw
  *               | statementExpression SEMI
  * </pre>
  * 
@@ -701,11 +745,59 @@ private JStatement statement(): {
     JStatement alternate  = null;
     JStatement body       = null;
     JExpression expr      = null;
+
+    //step 3 throw
+    //step 3 try
+    JBlock tryBlock = null;
+    JBlock catchBlock = null;
+    ArrayList<JFormalParameter> catchParameters = null;
+    ArrayList<JBlock> catchBlocks = null;
+
 }
 {
     try {
         statement = block() |
+
+        //step 3 try
+        <TRY>{line = token.beginLine;}
+        tryBlock = block()
+        (<CATCH> {
+            catchParameters = new ArrayList();
+            catchBlocks = new ArrayList();
+
+        }
+        <LPAREN>
+        {
+            catchParameters.add(formalParameter());
+        }
+        <RPAREN>
+        {
+            catchBlocks.add(block());
+        }
+             (
+                <CATCH>
+                <LPAREN>
+                {catchExceptions.add(formalParameter());}
+                <RPAREN>
+                {catchBlocks.add(block());}
+            )*
+            [
+                <FINALLY>{
+                    finallyBlock = block();
+                }
+            ] |
+            <FINALLY>{
+                finallyBlock = block();
+            }                
+        )
+        {statement = new JTryStatement(line, tryBlock, catchParameters, catchBlocks,finallyBlock);} |
         
+
+        //step 3 throw
+        <THROW> { line = token.beginLine;
+                expr = expression();
+                statement = new JthrowStatement(line, throwExpression);} |
+
         <IF> { line = token.beginLine; }
         test = parExpression()
         consequent = statement()
