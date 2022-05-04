@@ -17,8 +17,7 @@ classDeclaration ::= CLASS IDENTIFIER
 
 classBody ::= LCURLY {modifiers memberDecl} RCURLY
 
-memberDecl ::= IDENTIFIER            // constructor
-                 formalParameters block
+memberDecl ::= IDENTIFIER formalParameters [ THROWS qualifiedIdentifier { COMMA qualifiedIdentifier } ] block // constructor
              | (VOID | type) IDENTIFIER  // method
                  formalParameters
                  (block | SEMI)
@@ -34,7 +33,7 @@ statement ::= block
             | FOR LPAREN [forInit] SEMI [expression] SEMI [forUpdate] RPAREN statement // step 3
             | RETURN [expression] SEMI
             | SEMI 
-            | TRY block {CATCH block} [FINALLY block]
+            | TRY block {CATCH LPAREN FormalParameter RPAREN} [FINALLY block]
             | THROW expression SEMI
             | statementExpression SEMI
             
