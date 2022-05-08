@@ -2,7 +2,9 @@
 
 package jminusminus;
 
+import java.time.Year;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 import static jminusminus.CLConstants.*;
 
 /**
@@ -22,6 +24,12 @@ class JMethodDeclaration extends JAST implements JMember {
 
     /** The formal parameters. */
     protected ArrayList<JFormalParameter> params;
+
+    /** The potentially thrown exceptions */
+    protected ArrayList<TypeName> exceptions;
+
+    /** Exceptions */
+    protected ArrayList<String> exceptionJVMNames;
 
     /** Method body. */
     protected JBlock body;
@@ -63,7 +71,7 @@ class JMethodDeclaration extends JAST implements JMember {
 
     public JMethodDeclaration(int line, ArrayList<String> mods,
         String name, Type returnType,
-        ArrayList<JFormalParameter> params, JBlock body)
+        ArrayList<JFormalParameter> params, ArrayList<TypeName> exceptions, JBlock body)
 
     {
         super(line);
@@ -71,6 +79,7 @@ class JMethodDeclaration extends JAST implements JMember {
         this.name = name;
         this.returnType = returnType;
         this.params = params;
+        this.exceptions = exceptions;
         this.body = body;
         this.isAbstract = mods.contains("abstract");
         this.isStatic = mods.contains("static");
@@ -122,6 +131,25 @@ class JMethodDeclaration extends JAST implements JMember {
         partialCodegen(context, partial);
     }
 
+    public void setAbstract() {
+        this.isAbstract = true;
+        if(!this.mods.contains("abstract")) {
+            this.mods.add("abstract");
+        }
+    }
+
+    public void setStatic(boolean isStatic) {
+        this.isStatic = true;
+        if(!this.mods.contains("static")) {
+            this.mods.add("static");
+        }
+    }
+
+    public boolean isStatic() {
+        return this.isStatic;
+    }
+
+
     /**
      * Analysis for a method declaration involves (1) creating a
      * new method context (that records the return type; this is
@@ -146,16 +174,33 @@ class JMethodDeclaration extends JAST implements JMember {
             this.context.nextOffset();
         }
 
+        // Resolve exception types
+        ArrayList<Type> exceptionTypes = new ArrayList<Type>();
+        exceptionTypes = exceptions.stream().map(x -> x.resolve(this.context))
+        .collect(Collectors.toCollection(ArrayList::new));
+
+        // Add the exceptions into the context
+        if (!exceptionTypes.isEmpty()) {
+            for(Type exception : exceptionTypes) {
+                methodContext.addException(exception);
+            }
+        }
+        
+        // Convert the typenames for exceptions to jvmNames
+        exceptionJVMNames = this.exceptions.stream().map(x -> x.jvmName())
+                .collect(Collectors.toCollection(ArrayList::new));
+
         // Declare the parameters. We consider a formal parameter 
         // to be always initialized, via a function call.
         for (JFormalParameter param : params) {
-            LocalVariableDefn defn = new LocalVariableDefn(param.type(), this.context.nextOffset());
+
+            Type typeParam = param.type();
+            LocalVariableDefn defn = new LocalVariableDefn(typeParam, 
+                this.context.nextOffset(typeParam));
             defn.initialize();
             this.context.addEntry(param.line(), param.name(), defn);
-            if (defn.type() == Type.DOUBLE) {
-                this.context.nextOffset();
-            }
         }
+        
         if (body != null) {
             body = body.analyze(this.context);
             if (returnType!=Type.VOID && ! methodContext.methodHasReturn()){
@@ -179,19 +224,19 @@ class JMethodDeclaration extends JAST implements JMember {
     public void partialCodegen(Context context, CLEmitter partial) {
         // Generate a method with an empty body; need a return to
         // make the class verifier happy.
-        partial.addMethod(mods, name, descriptor, null, false);
+        partial.addMethod(mods, name, descriptor, exceptionJVMNames, false);
 
         // Add implicit RETURN
         if (returnType == Type.VOID) {
             partial.addNoArgInstruction(RETURN);
         } else if (returnType == Type.INT
-            || returnType == Type.BOOLEAN || returnType == Type.CHAR) {
+            || returnType == Type.BOOLEAN || returnType == Type.CHAR ) {
             partial.addNoArgInstruction(ICONST_0);
             partial.addNoArgInstruction(IRETURN);
-        } else if (returnType == Type.DOUBLE) {
+        } else if(returnType == Type.DOUBLE){
             partial.addNoArgInstruction(DCONST_0);
             partial.addNoArgInstruction(DRETURN);
-        }else {
+        } else {
             // A reference type.
             partial.addNoArgInstruction(ACONST_NULL);
             partial.addNoArgInstruction(ARETURN);
@@ -199,7 +244,7 @@ class JMethodDeclaration extends JAST implements JMember {
     }
 
     /**
-     * Generates code for the method declaration.
+     * Generates code for the method declaration.setAbstract
      * 
      * @param output
      *                the code emitter (basically an abstraction
@@ -207,7 +252,7 @@ class JMethodDeclaration extends JAST implements JMember {
      */
 
     public void codegen(CLEmitter output) {
-        output.addMethod(mods, name, descriptor, null, false);
+        output.addMethod(mods, name, descriptor, exceptionJVMNames, false);
         if (body != null) {
             body.codegen(output);
         }
@@ -248,6 +293,15 @@ class JMethodDeclaration extends JAST implements JMember {
                 p.indentLeft();
             }
             p.println("</FormalParameters>");
+        }
+        if (exceptions != null) {
+            p.println("<Exceptions>");
+            for (TypeName exception : exceptions) {
+                p.indentRight();
+                p.printf("<Exception type=%s>\n", exception.toString());
+                p.indentLeft();
+            }
+            p.println("</Exceptions>");
         }
         if (body != null) {
             p.println("<Body>");

@@ -3,7 +3,9 @@
 package jminusminus;
 
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -52,6 +54,9 @@ class Context {
      */
     protected Map<String, IDefn> entries;
 
+    //step 3 Throws Exceptions
+    protected ArrayList<Type> exceptions = new ArrayList<>();
+
     /**
      * Constructs a Context.
      * 
@@ -93,6 +98,32 @@ class Context {
         }
     }
 
+
+    //step 3 Throws Exceptions
+    // Adds an exception the to current context.
+    public void addException(int line, Type exception) {
+        if (exceptions.isEmpty() || !exceptions.contains(exception)) {
+            // System.out.println(exception.toString());
+            exceptions.add(exception);
+        } /*else if (exceptions.contains(exception)) {
+            JAST.compilationUnit.reportSemanticError(line, "Exception already exists: "
+            + exception.toString());
+        }     */
+    }
+
+    // Adds an exception the to current context.
+    public void addException(Type exception) {
+            if (exceptions.isEmpty() || !exceptions.contains(exception)) {
+                // System.out.println(exception.toString());
+                exceptions.add(exception);
+            } 
+        }     
+    
+
+    // Get exceptions
+    public ArrayList<Type> getExceptions() {
+        return exceptions;
+    }
     /**
      * Returns the definition for a name in the environment. If it's not found in
      * this context, we look for it in the surrounding context(s).
@@ -344,6 +375,20 @@ class LocalContext extends Context {
 
     public int nextOffset() {
         return offset++;
+    }
+
+    //step 3 Throws Offset
+    public int nextOffset(int thickness) {
+        int baseOffset = offset;
+        offset += thickness;
+        return baseOffset;
+    }
+
+    public int nextOffset(Type type) {
+        int thickness = type == Type.DOUBLE ? 2 : 1;
+        int baseOffset = offset;
+        offset += thickness;
+        return baseOffset;
     }
 
     /**
