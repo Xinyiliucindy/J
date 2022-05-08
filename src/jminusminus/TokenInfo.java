@@ -32,16 +32,16 @@ enum TokenKind {
 
     // Operators
     //AND,GT_EQUAL,LT,BITXOR_ASSIGN,NOT_EQUAL,MINUS_ASSIGN,STAR_ASSIGN,DIV_ASSIGN,REM_ASSIGN
-    //SSL_ASSIGN,SSR_ASSIGN,USR_ASSIGN,BITWISE_OR_ASSIGN,LOGICAL_OR,QUESTION
+    //SSL_ASSIGN,SSR_ASSIGN,USR_ASSIGN,BTOR_ASSIGN,LOR,QUESTION
     AND_ASSIGN("&="), ASSIGN("="), BITXOR_ASSIGN("^="), DEC("--"), 
     EQUAL("=="), GT(">"), GT_EQUAL(">="), INC("++"), LAND("&&"), LE("<="), 
-    LNOT("!"), LT("<"), LOGICAL_OR("||"), MINUS("-"), MINUS_ASSIGN("-="), NOT_EQUAL("!="), 
+    LNOT("!"), LT("<"), LOR("||"), MINUS("-"), MINUS_ASSIGN("-="), NOT_EQUAL("!="), 
     QUESTION("?"), PLUS_ASSIGN("+="), STAR("*"), STAR_ASSIGN("*="), 
     
     DIV("/"), DIV_ASSIGN("/="), REM("%"), REM_ASSIGN("%="),    // step 0   
     PLUS("+"),          // step 0   xiaodiezi
     SSLEFT("<<"), SSL_ASSIGN("<<="), SSRIGHT(">>"), SSR_ASSIGN(">>="), USRIGHT(">>>"), USR_ASSIGN(">>>="),    // step 0   xinyi
-    BITWISE_OR("|"), BITWISE_OR_ASSIGN("|="), COMPLEMENT("~"),        // step 0       gengxingguang
+    BTOR("|"), BTOR_ASSIGN("|="), COMPLEMENT("~"),        // step 0       gengxingguang
     BITXOR("^"),                // step 0   yaoyao
     AND("and"),                 // step 0   zoe
 

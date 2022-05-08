@@ -1065,6 +1065,8 @@ public class Parser {
         int line = scanner.token().line();
         JExpression expr = expression();
         if (expr instanceof JAssignment || expr instanceof JPreIncrementOp
+                                        || expr instanceof JPreDecrementOp
+                                        || expr instanceof JPostIncrementOp
                                         || expr instanceof JPostDecrementOp
                                         || expr instanceof JMessageExpression
                                         || expr instanceof JSuperConstruction
@@ -1111,7 +1113,7 @@ public class Parser {
     //XingGuang Geng assignment 
     private JExpression assignmentExpression() {
         int line = scanner.token().line();
-        JExpression lhs = conditionalAndExpression();
+        JExpression lhs = conditionalOrExpression();
         if (have(ASSIGN)) {
             return new JAssignOp(line, lhs, assignmentExpression());
         }else if(have(STAR_ASSIGN)){
@@ -1136,7 +1138,7 @@ public class Parser {
      * // level 12 step3
         conditionalExpression ::= conditionalOrExpression
         [ QUESTION assignmentExpression : conditionalExpression]
-     *  **/
+     *  **
 
     private JExpression conditionalExpression(){
         int line = scanner.token().line();
@@ -1153,19 +1155,24 @@ public class Parser {
         }
     }
 
-    /**
-     * level11 step3 need to be update,because it is wrong to use JLogicalAndOp
-     * conditionalOrExpression ::= conditionalAndExpression 
-                          { LOGICAL_OR conditionalAndExpression}
-     */
+     /**
+      * Parse a conditional-or expression
+      *
+      * <pre>
+      * conditionalOrExpression ::= conditionalAndExpression 
+      *                    { LOR conditionalAndExpression}
+      * </pre>
+      *
+      * @return as AST for a conditionalExpression.
+      */
 
     private JExpression conditionalOrExpression(){
         int line = scanner.token().line();
         boolean more = true;
         JExpression lhs = conditionalAndExpression();
         while (more) {
-            if (have(LOGICAL_OR)) {
-                lhs = new JLogicalAndOp(line, lhs, conditionalAndExpression());
+            if (have(LOR)) {
+                lhs = new JLogicalOrOp(line, lhs, conditionalAndExpression());
             } else {
                 more = false;
             }
@@ -1205,7 +1212,7 @@ public class Parser {
      * 
      * <pre>
      *  bitwiseOrExpression  ::= bitXorExpression       // level 9
-     *                               {BITWISE_OR bitXorExpression}
+     *                               {BTOR bitXorExpression}
      * </pre>
      * 
      * @return an AST for an bitwiseOrExpression.
@@ -1216,7 +1223,7 @@ public class Parser {
         boolean more = true;
         JExpression lhs = bitXorExpression();
         while (more) {
-            if (have(BITWISE_OR)) {
+            if (have(BTOR)) {
                 lhs = new JBitwiseOrOp(line, lhs, bitXorExpression());
             } else {
                 more = false;
@@ -1434,6 +1441,8 @@ public class Parser {
         int line = scanner.token().line();
         if (have(INC)) {
             return new JPreIncrementOp(line, unaryExpression());
+        } else if (have(DEC)) {
+            return new JPreDecrementOp(line, unaryExpression());
         } else if (have(MINUS)) {
             return new JNegateOp(line, unaryExpression());
         } else if (have(PLUS)) {
@@ -1498,6 +1507,9 @@ public class Parser {
         }
         while (have(DEC)) {
             primaryExpr = new JPostDecrementOp(line, primaryExpr);
+        }
+        while (have(INC)) {
+            primaryExpr = new JPostIncrementOp(line, primaryExpr);
         }
         return primaryExpr;
     }

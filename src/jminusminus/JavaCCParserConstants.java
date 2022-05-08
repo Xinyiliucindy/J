@@ -87,9 +87,9 @@ public interface JavaCCParserConstants {
   int USRIGHT = 86;
   int USR_ASSIGN = 87;
   int COMPLEMENT = 88;
-  int BITWISE_OR = 89;
-  int BITWISE_OR_ASSIGN = 90;
-  int LOGICAL_OR = 91;
+  int BTOR = 89;
+  int BTOR_ASSIGN = 90;
+  int LOR = 91;
   int QUESTION = 92;
   int LPAREN = 93;
   int RPAREN = 94;
@@ -191,7 +191,7 @@ public interface JavaCCParserConstants {
     "\"!=\"",
     "\"-\"",
     "\"-=\"",
-    "\"!-\"",
+    "\"--\"",
     "\"+=\"",
     "\"*\"",
     "\"*=\"",

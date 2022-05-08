@@ -277,16 +277,16 @@ class Scanner {
             return new TokenInfo(QUESTION,line);
         case '|':
             nextCh();
-            if (ch == '=') {
+            if (ch == '|') {
                 nextCh();
-                return new TokenInfo(BITWISE_OR_ASSIGN, line);
+                return new TokenInfo(LOR, line);
             }
-            else if (ch == '|') {
+            else if (ch == '=') {
                 nextCh();
-                return new TokenInfo(LOGICAL_OR, line);
+                return new TokenInfo(BTOR_ASSIGN, line);
             }
             else{
-                return new TokenInfo(BITWISE_OR, line);
+                return new TokenInfo(BTOR, line);
             }
         case '~':
             nextCh();
@@ -343,10 +343,10 @@ class Scanner {
             nextCh();
             if (ch == '=') {
                 nextCh();
-                return new TokenInfo(BITWISE_OR_ASSIGN, line);
+                return new TokenInfo(BTOR_ASSIGN, line);
             }
             else {
-                return new TokenInfo(BITWISE_OR, line);
+                return new TokenInfo(BTOR, line);
             }
         case '\'':
             buffer = new StringBuffer();

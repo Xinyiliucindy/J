@@ -216,7 +216,7 @@ TOKEN: {
 | <NOT_EQUAL: "!="> //step 3
 | <MINUS: "-">
 | <MINUS_ASSIGN: "-="> //step 3
-| <DEC: "!-"> //step 3
+| <DEC: "--"> //step 3
 | <PLUS_ASSIGN: "+=">
 | <STAR: "*">
 | <STAR_ASSIGN: "*="> //step 3
@@ -231,9 +231,9 @@ TOKEN: {
 | <USRIGHT: ">>>"> //step 3
 | <USR_ASSIGN: ">>>="> //step 3
 | <COMPLEMENT: "~"> //step 3
-| <BITWISE_OR: "|"> //step 3
-| <BITWISE_OR_ASSIGN: "|="> //step 3
-| <LOGICAL_OR: "||"> //step 3
+| <BTOR: "|"> //step 3
+| <BTOR_ASSIGN: "|="> //step 3
+| <LOR: "||"> //step 3
 | <QUESTION: "?"> //step 3
 }
 
@@ -1133,6 +1133,8 @@ private JStatement statementExpression(): {
             line = expr.line();
             if (expr instanceof JAssignment
              || expr instanceof JPreIncrementOp
+             || expr instanceof JPreDecrementOp
+             || expr instanceof JPostIncrementOp
              || expr instanceof JPostDecrementOp
              || expr instanceof JMessageExpression
              || expr instanceof JSuperConstruction
@@ -1197,7 +1199,7 @@ private JExpression assignmentExpression(): {
 }
 {
     try {
-        lhs = conditionalAndExpression() { line = lhs.line(); }
+        lhs = conditionalOrExpression() { line = lhs.line(); }
         [
             <ASSIGN>
             rhs = assignmentExpression()
@@ -1231,6 +1233,37 @@ private JExpression assignmentExpression(): {
 }
 
 /**
+ * Parse a conditional-or expression.
+ *
+ * <pre>
+ *   conditionalOrExpression ::= conditionalAndExpression
+ *                       {LOR conditionalAndExpression}
+ * </pre>
+ *
+ * @return an AST for a conditionalExpression.
+ */
+
+
+private JExpression conditionalOrExpression():{
+    int line = 0;
+    JExpression lhs = null, rhs = null;
+}
+{
+    try {
+        lhs = conditionalAndExpression() { line = lhs.line(); }
+        (
+            <LOR>
+            rhs = conditionalAndExpression()
+            { lhs = new JLogicalOrOp(line, lhs, rhs); }
+        )*
+    }
+    catch (ParseException e) {
+        recoverFromError(new int[] { SEMI, EOF }, e);
+    }
+    { return lhs; }
+}
+
+/**
  * Parse a conditional-and expression.
  * 
  * <pre>
@@ -1247,11 +1280,68 @@ private JExpression conditionalAndExpression(): {
 }
 {
     try {
-        lhs = equalityExpression() { line = lhs.line(); }
+        lhs = bitwiseOrExpression() { line = lhs.line(); }
         (
             <LAND>
-            rhs = equalityExpression()
+            rhs = bitwiseOrExpression()
             { lhs = new JLogicalAndOp(line, lhs, rhs); }
+        )*
+    }
+    catch (ParseException e) {
+        recoverFromError(new int[] { SEMI, EOF }, e);
+    }
+    { return lhs; }
+}
+
+private JExpression bitwiseOrExpression(): {
+    int line = 0;
+    JExpression lhs = null, rhs = null;
+}
+{
+    try {
+        lhs = bitXorExpression() { line = lhs.line(); }
+        (
+            <BTOR>
+            rhs = bitXorExpression()
+            { lhs = new JBitwiseOrOp(line, lhs, rhs); }
+        )*
+    }
+    catch (ParseException e) {
+        recoverFromError(new int[] { SEMI, EOF }, e);
+    }
+    { return lhs; }
+}
+
+private JExpression bitXorExpression(): {
+    int line = 0;
+    JExpression lhs = null, rhs = null;
+}
+{
+    try {
+        lhs = bitAndExpression() { line = lhs.line(); }
+        (
+            <BITXOR>
+            rhs = bitAndExpression()
+            { lhs = new JBitXorOp(line, lhs, rhs); }
+        )*
+    }
+    catch (ParseException e) {
+        recoverFromError(new int[] { SEMI, EOF }, e);
+    }
+    { return lhs; }
+}
+
+private JExpression bitAndExpression(): {
+    int line = 0;
+    JExpression lhs = null, rhs = null;
+}
+{
+    try {
+        lhs = equalityExpression() { line = lhs.line(); }
+        (
+            <AND>
+            rhs = equalityExpression()
+            { lhs = new JBitAndOp(line, lhs, rhs); }
         )*
     }
     catch (ParseException e) {
@@ -1422,6 +1512,10 @@ private JExpression unaryExpression(): {
         unaryExpr = unaryExpression()
         { expr = new JPreIncrementOp(line, unaryExpr); } |
 
+        <DEC> { line = token.beginLine; }
+        unaryExpr = unaryExpression()
+        { expr = new JPreDecrementOp(line, unaryExpr); } |
+
         <MINUS> { line = token.beginLine; }
         unaryExpr = unaryExpression()
         { expr = new JNegateOp(line, unaryExpr); } |
@@ -1504,6 +1598,9 @@ private JExpression postfixExpression(): {
             primaryExpr = selector(primaryExpr)
         )*
         (
+            <INC>
+	        { primaryExpr = new JPostIncrementOp(line, primaryExpr); } |
+            
             <DEC>
             { primaryExpr = new JPostDecrementOp(line, primaryExpr); }
         )*
