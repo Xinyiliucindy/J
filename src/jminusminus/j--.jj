@@ -265,14 +265,11 @@ TOKEN: {
 
 // Literals
 TOKEN: {
- <#EXPONENT: ["e","E"](["+","-"])?>
-| <#DOUBLE_END: ["d","D"]>
-| <DOUBLE_LITERAL: "."(<DIGIT>)* (<EXPONENT>(<DIGIT>)*(<DOUBLE_END>)?|(<DOUBLE_END>)?) 
-                  |(<DIGIT>)* "."(<DIGIT>)* (<EXPONENT>(<DIGIT>)*(<DOUBLE_END>)?|(<DOUBLE_END>)?) >
-| <INT_LITERAL: ("0" | <NON_ZERO_DIGIT> (<DIGIT>)*) >
+  <INT_LITERAL: ("0" | <NON_ZERO_DIGIT> (<DIGIT>)*) >
 | <CHAR_LITERAL: "'" (<ESC> | ~["'","\\","\n","\r"]) "'" >
 | <STRING_LITERAL: "\"" (<ESC> | ~["\"","\\","\n","\r"])* "\"" >
 | <#ESC: "\\" ["n","t","b","r","f","\\","'","\""] >
+| <DOUBLE_LITERAL: ((<DIGIT>)*) "." (<DIGIT> (<DIGIT>)*)>
 
 }
 
