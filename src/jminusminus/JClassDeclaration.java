@@ -43,14 +43,6 @@ class JClassDeclaration extends JAST implements JTypeDecl {
     /** Static (class) fields of this class. */
     private ArrayList<JFieldDeclaration> staticFieldInitializations;
 
-
-    //step 3 Throws
-    /** Static initialization block */
-    private ArrayList<JBlock> staticInitializationBlocks;
-
-    /** Instance initialization block */
-    private ArrayList<JBlock> instanceInitializationBlocks;
-
     /**
      * Constructs an AST node for a class declaration given the line number, list
      * of class modifiers, name of the class, its super class type, and the
@@ -375,14 +367,5 @@ class JClassDeclaration extends JAST implements JTypeDecl {
         // Return
         output.addNoArgInstruction(RETURN);
     }
-
-
-    //step 3 Throws codegenInit
-    protected void codegenInstanceInitialization(CLEmitter output){
-        for (JBlock block : instanceInitializationBlocks) {
-            block.codegen(output);
-        }
-    }
-
 
 }

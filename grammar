@@ -17,9 +17,12 @@ classDeclaration ::= CLASS IDENTIFIER
 
 classBody ::= LCURLY {modifiers memberDecl} RCURLY
 
-//step 3 throws
-memberDecl ::= IDENTIFIER formalParameters [ THROWS qualifiedIdentifier { COMMA qualifiedIdentifier } ] block // constructor
-             | (VOID | type) IDENTIFIER  formalParameters [THROWS qualifiedIdentifier {COMMA qualifiedIdentifier}] (block | SEMI) //method
+memberDecl ::= IDENTIFIER            // constructor
+                 formalParameters 
+                    [ THROWS qualifiedIdentifier { COMMA qualifiedIdentifier } ]
+             | (VOID | type) IDENTIFIER  // method
+                 formalParameters
+                    [ THROWS qualifiedIdentifier { COMMA qualifiedIdentifier } ] ( block | SEMI )(block | SEMI)
              | type variableDeclarators SEMI // field
 
 block ::= LCURLY {blockStatement} RCURLY 
@@ -30,13 +33,17 @@ blockStatement ::= localVariableDeclarationStatement
 statement ::= block
             | IF parExpression statement [ELSE statement]
             | FOR LPAREN [forInit] SEMI [expression] SEMI [forUpdate] RPAREN statement // step 3
+            | WHILE parExpression statement 
             | RETURN [expression] SEMI
             | SEMI 
-            | TRY block {CATCH LPAREN FormalParameter RPAREN} [FINALLY block] // step 3 Try
-            | THROW expression SEMI //step 3 throw
+            | tryStatement             //step 2 Try
+            | THROW expression SEMI              //step 2 Throw
             | statementExpression SEMI
-            
-            
+
+//step 2 Try
+tryStatement ::= TYR Block catchClause {catchClause} [FINALLY Block]
+catchClause ::= CATCH catchFormalParameter Block
+catchFormalParameter ::= LPAREN catchType {BTOR catchType} identifier RPAREN
 
 formalParameters ::= LPAREN 
                        [formalParameter {COMMA formalParameter}]

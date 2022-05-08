@@ -3,7 +3,6 @@
 package jminusminus;
 
 import java.util.ArrayList;
-import java.util.stream.Collectors;
 import static jminusminus.CLConstants.*;
 
 /**
@@ -13,14 +12,13 @@ import static jminusminus.CLConstants.*;
  * @see JMethodDeclaration
  */
 
-class JConstructorDeclaration extends JMethodDeclaration implements JMember {
+class JConstructorDeclaration extends JMethodDeclaration  {
 
     /** Does this constructor invoke this(...) or super(...)? */
     private boolean invokesConstructor;
 
     /** Defining class */
     JClassDeclaration definingClass;
-
     /**
      * Constructs an AST node for a constructor declaration given the line
      * number, modifiers, constructor name, formal parameters, and the
@@ -40,10 +38,10 @@ class JConstructorDeclaration extends JMethodDeclaration implements JMember {
      */
 
     public JConstructorDeclaration(int line, ArrayList<String> mods,
-            String name, ArrayList<JFormalParameter> params, ArrayList<TypeName> exceptions, JBlock body)
+            String name, ArrayList<JFormalParameter> params, ArrayList<TypeName> exceptionClauses, JBlock body)
 
     {
-        super(line, mods, name, Type.CONSTRUCTOR, params, exceptions, body);
+        super(line, mods, name, Type.CONSTRUCTOR, params, exceptionClauses, body);
     }
 
     /**
@@ -59,16 +57,13 @@ class JConstructorDeclaration extends JMethodDeclaration implements JMember {
     public void preAnalyze(Context context, CLEmitter partial) {
         super.preAnalyze(context, partial);
         if (isStatic) {
-            JAST.compilationUnit.reportSemanticError(line(),
-                    "Constructor cannot be declared static");
+            JAST.compilationUnit.reportSemanticError(line(), "Constructor cannot be declared static");
         } else if (isAbstract) {
-            JAST.compilationUnit.reportSemanticError(line(),
-                    "Constructor cannot be declared abstract");
+            JAST.compilationUnit.reportSemanticError(line(), "Constructor cannot be declared abstract");
         }
-        if (body.statements().size() > 0
-                && body.statements().get(0) instanceof JStatementExpression) {
-            JStatementExpression first = (JStatementExpression) body
-                    .statements().get(0);
+        
+        if (body.statements().size() > 0 && body.statements().get(0) instanceof JStatementExpression) {
+            JStatementExpression first = (JStatementExpression) body.statements().get(0);
             if (first.expr instanceof JSuperConstruction) {
                 ((JSuperConstruction) first.expr).markProperUseOfConstructor();
                 invokesConstructor = true;
@@ -90,10 +85,8 @@ class JConstructorDeclaration extends JMethodDeclaration implements JMember {
 
     public JAST analyze(Context context) {
         // Record the defining class declaration.
-        definingClass = (JClassDeclaration) (context.classContext()
-                                                    .definition());
-        MethodContext methodContext =
-            new MethodContext(context, isStatic, returnType);
+        definingClass = (JClassDeclaration) (context.classContext().definition());
+        MethodContext methodContext = new MethodContext(context, isStatic, returnType);
         this.context = methodContext;
 
         if (!isStatic) {
@@ -101,30 +94,18 @@ class JConstructorDeclaration extends JMethodDeclaration implements JMember {
             this.context.nextOffset();
         }
 
-        // Resolve exception types
-        ArrayList<Type> exceptionTypes = new ArrayList<Type>();
-        exceptionTypes = exceptions.stream().map(x -> x.resolve(this.context))
-        .collect(Collectors.toCollection(ArrayList::new));
-        
-        // Add the exceptions into the context
-        if (!exceptionTypes.isEmpty()) {
-            for(Type exception : exceptionTypes) {
-                methodContext.addException(exception);
-            }
-        }
-                
-        // Convert the typenames for exceptions to jvmNames
-        exceptionJVMNames = this.exceptions.stream().map(x -> "java.lang." + x)
-                .collect(Collectors.toCollection(ArrayList::new));
 
         // Declare the parameters. We consider a formal parameter
         // to be always initialized, via a function call. 
         for (JFormalParameter param : params) {
-            Type paramType = param.type();
-            LocalVariableDefn defn = new LocalVariableDefn(paramType,
-                                             this.context.nextOffset(paramType));
+            LocalVariableDefn defn = new LocalVariableDefn(param.type(),
+                                             this.context.nextOffset());
             defn.initialize();
             this.context.addEntry(param.line(), param.name(), defn);
+        }
+
+        if(isThrows){
+
         }
         if (body != null) {
             body = body.analyze(this.context);
@@ -144,12 +125,11 @@ class JConstructorDeclaration extends JMethodDeclaration implements JMember {
      */
 
     public void partialCodegen(Context context, CLEmitter partial) {
-        partial.addMethod(mods, "<init>", descriptor, exceptionJVMNames, false);
+        partial.addMethod(mods, "<init>", descriptor, null, false);
         if (!invokesConstructor) {
             partial.addNoArgInstruction(ALOAD_0);
             partial.addMemberAccessInstruction(INVOKESPECIAL,
-                    ((JTypeDecl) context.classContext().definition())
-                            .superType().jvmName(), "<init>", "()V");
+                    ((JTypeDecl) context.classContext().definition()).superType().jvmName(), "<init>", "()V");
         }
         partial.addNoArgInstruction(RETURN);
     }
@@ -163,24 +143,16 @@ class JConstructorDeclaration extends JMethodDeclaration implements JMember {
      */
 
     public void codegen(CLEmitter output) {
-        output.addMethod(mods, "<init>", descriptor, exceptionJVMNames, false);
+        output.addMethod(mods, "<init>", descriptor, null, false);
         if (!invokesConstructor) {
             output.addNoArgInstruction(ALOAD_0);
             output.addMemberAccessInstruction(INVOKESPECIAL,
-                    ((JTypeDecl) context.classContext().definition())
-                            .superType().jvmName(), "<init>", "()V");
-
-            // Field initializations
-            for (JFieldDeclaration field : definingClass
-                .instanceFieldInitializations()) {
-                field.codegenInitializations(output);
-           }
-
-            // Field initialization blocks
-            definingClass.codegenInstanceInitialization(output);                        
+                    ((JTypeDecl) context.classContext().definition()).superType().jvmName(), "<init>", "()V");
         }
-        
-
+        // Field initializations
+        for (JFieldDeclaration field : definingClass.instanceFieldInitializations()) {
+            field.codegenInitializations(output);
+        }
         // And then the body
         body.codegen(output);
         output.addNoArgInstruction(RETURN);
@@ -191,8 +163,7 @@ class JConstructorDeclaration extends JMethodDeclaration implements JMember {
      */
 
     public void writeToStdOut(PrettyPrinter p) {
-        p.printf("<JConstructorDeclaration line=\"%d\" " + "name=\"%s\">\n",
-                line(), name);
+        p.printf("<JConstructorDeclaration line=\"%d\" " + "name=\"%s\">\n", line(), name);
         p.indentRight();
         if (context != null) {
             context.writeToStdOut(p);
@@ -215,14 +186,15 @@ class JConstructorDeclaration extends JMethodDeclaration implements JMember {
             }
             p.println("</FormalParameters>");
         }
-        if (exceptions != null) {
-            p.println("<Exceptions>");
-            for (TypeName exception : exceptions) {
-                p.indentRight();
-                p.printf("<Exception type=%s\n", exception.toString());
-                p.indentLeft();
-            }
-            p.println("</Exceptions>");
+        if (isThrows) {
+            p.println("<ThrowsExceptions>");
+
+            p.indentRight();
+            for (TypeName exception : exceptionClauses)
+                p.printf("<ExceptionClauses name=\"%s\"/>\n", exception.toString());
+            p.indentLeft();
+
+            p.println("</ThrowsExceptions>");
         }
         if (body != null) {
             p.println("<Body>");

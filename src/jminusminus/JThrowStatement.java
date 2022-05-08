@@ -1,81 +1,57 @@
-package jminusminus;
-
-import static jminusminus.CLConstants.*;
 //step 3 throw
 //step 4 throw
 //step 5 throw
 
+
+package jminusminus;
+
+import static jminusminus.CLConstants.*;
+
 /**
- * The AST node for a throwexpression
+ * The AST node for a throw-statement. If the enclosing method is non-void, then
+ * there is a value to return, so we keep track of the expression denoting that
+ * value and its type.
  */
+class JThrowStatement extends JStatement {
+	/** The throwed expression. */
+	private JExpression throwExpression;
 
-class JthrowStatement extends JStatement{
-    /** Thrown expression. */
-    private JExpression throwExpression;
+	public JThrowStatement(int line, JExpression throwExpression) {
+		super(line);
+		this.throwExpression = throwExpression;
+	}
 
-    /** Method for thrown expression */
-    private Constructor constructor;
+	public JStatement analyze(Context context) {
+		MethodContext  methodContext = context.methodContext();
 
-    /** Types of the arguments. */
+		return this;
+	}
 
-    private Type[] argTypes;
+	/**
+	 * Code generation for a throw statement. Constructs, initializes, and throws
+	 * the exception object.
+	 *
+	 * @param output the code emitter (basically an abstraction for producing the
+	 *               .class file).
+	 */
+	public void codegen(CLEmitter output) {
 
-        /**
-     * Constructs an AST node for a throw-statement given its line number and the expression
-     * 
-     * @param line
-     *            line in which the while-statement occurs in the source file.
-     * @param expr
-     *            the expression.
-     */
-    public JthrowStatement(int line, JExpression throwExpression){
-        super(line);
-        this.throwExpression = throwExpression;
-    }
+        // throwExpression.codegen(output);
+        // if (throwExpression.type() == Type.INT
+        //     || throwExpression.type() == Type.BOOLEAN
+        //     || throwExpression.type() == Type.CHAR) {
+        //     output.addNoArgInstruction(IRETURN);
+        // } else {
+        //     output.addNoArgInstruction(ARETURN);
+        // }
+}
 
-
-
-    /**
-     * Analysis involves...
-     * 
-     * @param context
-     *            context in which names are resolved.
-     * @return the analyzed (and possibly rewritten) AST subtree.
-     */
-    @Override
-    public JAST analyze(Context context) {
-        throwExpression = (JExpression) throwExpression.analyze(context);
-
-        //check if the throwExpression is the type throwable
-        
-        return this;
-    }
-
-
-    /**
-     * Generates code for the while loop.
-     * 
-     * @param output
-     *            the code emitter (basically an abstraction for producing the
-     *            .class file).
-     */
-
-    public void codegen(CLEmitter output) {
-        throwExpression.codegen(output);
-        output.addNoArgInstruction(ATHROW);
-    }
-
-
-
-
-    @Override
-    public void writeToStdOut(PrettyPrinter p) {
-        // TODO Auto-generated method stub
-        p.printf("<JThrowExpression line=\"%d\">\n", line());
-        p.indentRight();
-        throwExpression.writeToStdOut(p);
-        p.indentLeft();
-        p.printf("</JThrowExpression>\n");
-    }
-
+	/** {@inheritDoc} */
+	public void writeToStdOut(PrettyPrinter p) {
+		p.printf("<JThrowStatement line=\"%d\">\n", line());
+		p.indentRight();
+		throwExpression.writeToStdOut(p);
+		p.indentLeft();
+		p.printf("</JThrowStatement>\n");
+	}
 }

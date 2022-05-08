@@ -537,9 +537,13 @@ public class Parser {
      * Parse a member declaration.
      * 
      * <pre>
-     *   memberDecl ::= IDENTIFIER formalParameters [ THROWS qualifiedIdentifier { COMMA qualifiedIdentifier } ] block // constructor
-             | (VOID | type) IDENTIFIER  formalParameters [THROWS qualifiedIdentifier {COMMA qualifiedIdentifier}] (block | SEMI) //method
-             | type variableDeclarators SEMI // field
+     *   memberDecl ::= IDENTIFIER            // constructor
+     *                    formalParameters
+     *                    block
+     *                | (VOID | type) IDENTIFIER  // method
+     *                    formalParameters
+     *                    (block | SEMI)
+     *                | type variableDeclarators SEMI
      * </pre>
      * 
      * @param mods
@@ -551,64 +555,47 @@ public class Parser {
         int line = scanner.token().line();
         JMember memberDecl = null;
         if (seeIdentLParen()) {
-            // A constructor
+            // A constructor step 2 throws
             mustBe(IDENTIFIER);
             String name = scanner.previousToken().image();
             ArrayList<JFormalParameter> params = formalParameters();
-            ArrayList<TypeName> exceptions = new ArrayList<TypeName>();
-
-            //step 3 Throws for constructor
+            ArrayList<TypeName> exceptionClauses = new ArrayList<TypeName>();
             if (have(THROWS)) {
-                while (!see(LCURLY)) {
-                    exceptions.add(qualifiedIdentifier());
-                }
+                do
+                    exceptionClauses.add(qualifiedIdentifier());
+                while(have(COMMA));
             }
             JBlock body = block();
-            memberDecl = new JConstructorDeclaration(line, mods, name, params, exceptions, body);
-            
+            memberDecl = new JConstructorDeclaration(line, mods, name, params, exceptionClauses, body);
         } else {
             Type type = null;
-            //if(seeBlock()){
-            //    if (mods.contains("static")) { //static
-            //        memberDecl = block(mods);
-            //    } else {
-            //        memberDecl = block();
-            //    }
-            //}else 
-            if (have(VOID)) {
-                // void method
+            if (have(VOID)) { // void method
                 type = Type.VOID;
                 mustBe(IDENTIFIER);
                 String name = scanner.previousToken().image();
                 ArrayList<JFormalParameter> params = formalParameters();
-                //step 3 Throws for void method
-                ArrayList<TypeName> exceptions = new ArrayList<TypeName>();
+                ArrayList<TypeName> exceptionClauses = new ArrayList<TypeName>();
                 if (have(THROWS)) {
-                    while (!see(LCURLY)) {
-                        exceptions.add(qualifiedIdentifier());
-                    }
+                    do
+                        exceptionClauses.add(qualifiedIdentifier());
+                    while(have(COMMA));
                 }
                 JBlock body = have(SEMI) ? null : block();
-                memberDecl = new JMethodDeclaration(line, mods, name, type,
-                        params, exceptions, body);
+                memberDecl = new JMethodDeclaration(line, mods, name, type, params, exceptionClauses, body);
             } else {
                 type = type();
-                if (seeIdentLParen()) {
-                    // Non void method
+                if (seeIdentLParen()) {// Non void method
                     mustBe(IDENTIFIER);
                     String name = scanner.previousToken().image();
                     ArrayList<JFormalParameter> params = formalParameters();
-                    //step 3 Throws for non void method
-                    ArrayList<TypeName> exceptions = new ArrayList<TypeName>();
+                    ArrayList<TypeName> exceptionClauses = new ArrayList<TypeName>();
                     if (have(THROWS)) {
-                        while (!see(LCURLY)) {
-                            exceptions.add(qualifiedIdentifier());
-                        }
+                        do
+                            exceptionClauses.add(qualifiedIdentifier());
+                        while(have(COMMA));
                     }
-
                     JBlock body = have(SEMI) ? null : block();
-                    memberDecl = new JMethodDeclaration(line, mods, name, type,
-                            params, exceptions, body);
+                    memberDecl = new JMethodDeclaration(line, mods, name, type, params, exceptionClauses, body);
                 } else {
                     // Field
                     memberDecl = new JFieldDeclaration(line, mods,
@@ -618,16 +605,6 @@ public class Parser {
             }
         }
         return memberDecl;
-    }
-
-    private boolean seeBlock() {
-        scanner.recordPosition();
-        if (!have(LCURLY)) {
-            scanner.returnToPosition();
-            return false;
-        }
-        scanner.returnToPosition();
-        return true;
     }
 
     /**
@@ -681,8 +658,6 @@ public class Parser {
      *               | RETURN [expression] SEMI
      *               | SEMI 
      *               | statementExpression SEMI
-     *               | TRY block {CATCH LPAREN FormalParameter RPAREN} [FINALLY block]
-     *               | THROW expression SEMI
      * </pre>
      * 
      * @return an AST for a statement.
@@ -697,35 +672,11 @@ public class Parser {
             JStatement consequent = statement();
             JStatement alternate = have(ELSE) ? statement() : null;
             return new JIfStatement(line, test, consequent, alternate);
-        } else if (have(FOR)){//step3
-            ArrayList<JStatement> initfor = new ArrayList<JStatement>();
-            ArrayList<JStatement> updatefor = new ArrayList<JStatement>();
-            JExpression expr = null;
-            mustBe(LPAREN);
-            if(!see(SEMI))
-            {
-                initfor = forInit();
-            }
-            mustBe(SEMI);
-            if(!see(SEMI))
-            {
-                expr = expression();
-            }
-            mustBe(SEMI);
-            if(!see(RPAREN))
-            {
-                updatefor = forUpdate();
-            }
-            mustBe(RPAREN);
-            JStatement statement = statement();
-            return new JForStatement(line,initfor,expr,updatefor,statement);
-        }
-          else if (have(WHILE)) {
+        } else if (have(WHILE)) {
             JExpression test = parExpression();
             JStatement statement = statement();
             return new JWhileStatement(line, test, statement);
-        } 
-        else if (have(RETURN)) {
+        } else if (have(RETURN)) {
             if (have(SEMI)) {
                 return new JReturnStatement(line, null);
             } else {
@@ -736,34 +687,15 @@ public class Parser {
         } else if (have(SEMI)) {
             return new JEmptyStatement(line);
         } 
-        //step 3 try-catch-finally
-        else if(have(TRY)){
-            JBlock tryBlock = block();
-
-            //catch block list
-            ArrayList<JFormalParameter> catchParameters = null;
-            ArrayList<JBlock> catchBlocks = null;
-            if(see(CATCH)){
-                catchParameters = new ArrayList<JFormalParameter>();
-                catchBlocks = new ArrayList<JBlock>();
-                while(have(CATCH)){
-                    mustBe(LPAREN);
-                    catchParameters.add(formalParameter());
-                    mustBe(RPAREN);
-                    catchBlocks.add(block());
-                }
-            }
-            JBlock finallyBlock = null;
-            if(have(FINALLY)){
-                finallyBlock = block();
-            }
-            return new JTryStatement(line, tryBlock, catchParameters, catchBlocks,finallyBlock);
-        }
-        //step 3 throw 
+        //step 2 try
+        else if (have(TRY)) {
+            return tryStatement();
+        } 
+        //step 2 throw 
         else if(have(THROW)){
             JExpression throwExpression = expression();
             mustBe(SEMI);
-            return new JthrowStatement(line, throwExpression);
+            return new JThrowStatement(line, throwExpression);
         }
         else { // Must be a statementExpression
             JStatement statement = statementExpression();
@@ -772,50 +704,54 @@ public class Parser {
         }
     }
     /**
-     * forInit
-     * forInit ::= statementExpression {COMMA statementExpression} | [final] type variableDeclarators
-     * @return
-     * ArrayList<JVariableDeclarator> vdecls = variableDeclarators(type());
+     * Parse tryStatement. step 2 try
+     *
+     * <pre>
+     *   tryStatement ::= TYR Block catchClause {catchClause} [FINALLY Block]
+     *   catchClause ::= CATCH catchFormalParameter Block
+     *   catchFormalParameter ::= LPAREN catchType {BTOR catchType} identifier RPAREN
+
+     * </pre>
+     *
+     * @return an AST for a Statement.
      */
-    private ArrayList<JStatement> forInit() {
-        ArrayList<JStatement> teststatements = new ArrayList<JStatement>();
-        ArrayList<String> mods = new ArrayList<String>();
-        if(have(COMMA))
-        {
-            do{
-                teststatements.add(statementExpression());
-            }while(have(COMMA));
-            return teststatements;
-        }
-        else{ 
-            if (have(FINAL)) {
-                mods.add("final");
-            }
-            int line = scanner.token().line();
-            ArrayList<JVariableDeclarator> vdecls = variableDeclarators(type());
-            JStatement jVari = new JVariableDeclaration(line,mods,vdecls);
-            teststatements.add(jVari);
-            //return new JVariableDeclaration(line, mods, vdecls);
-            return teststatements;
-        }
+    private JCatchFormalParameter catchFormalParameter() {
+        int line = scanner.token().line();
+        mustBe(LPAREN);
 
+        ArrayList<TypeName> catchTypes = new ArrayList<TypeName>();
+        do
+            catchTypes.add(qualifiedIdentifier());
+        while (have(BTOR));
 
+        mustBe(IDENTIFIER);
+        String name = scanner.previousToken().image();
 
+        mustBe(RPAREN);
 
+        return new JCatchFormalParameter(line, catchTypes, name);
     }
+    
 
-    /**
-     * forUpdate
-     * forUpdate ::= statementExpression {COMMA statementExpression}
-     * @return
-    */
-    private ArrayList<JStatement> forUpdate() {
-        //int line = scanner.token().line();
-        ArrayList<JStatement> test =new ArrayList<JStatement>();
-        do {
-            test.add(statementExpression());
-        } while (have(COMMA));
-        return test;
+    private JTryStatement tryStatement() {
+        int line = scanner.token().line();
+        JBlock tryblock= block();
+
+        ArrayList<JCatchClause> catchClauses = new ArrayList<>();
+        //at least have one catch
+        mustBe(CATCH);
+            catchClauses.add(new JCatchClause(line, catchFormalParameter(), block()));
+        while (have(CATCH))
+            catchClauses.add(new JCatchClause(line, catchFormalParameter(), block()));
+            
+
+        JBlock finallyblock = null;
+        if (have(FINALLY)){
+            finallyblock = block();
+        }
+            
+
+        return new JTryStatement(line, tryblock, catchClauses, finallyblock);
     }
 
 
