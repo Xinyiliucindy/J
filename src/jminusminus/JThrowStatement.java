@@ -22,9 +22,19 @@ class JThrowStatement extends JStatement {
 	}
 
 	public JStatement analyze(Context context) {
-		MethodContext  methodContext = context.methodContext();
-
-		return this;
+		
+		if (throwExpression != null) {
+            throwExpression = throwExpression.analyze(context);
+            if(!Throwable.class.isAssignableFrom(throwExpression.type.classRep())) {
+                JAST.compilationUnit.reportSemanticError(line(),
+                        "Throw expression must be of type Throwable");
+            }
+            throwExpression.type().mustMatchExpected(line(), Type.EXCEPTION);
+        } else {
+            JAST.compilationUnit.reportSemanticError(line(),
+                    "Throw statement must have an expression");
+        }
+        return this;
 	}
 
 	/**
@@ -35,15 +45,11 @@ class JThrowStatement extends JStatement {
 	 *               .class file).
 	 */
 	public void codegen(CLEmitter output) {
+		throwExpression.codegen(output);
+        output.addNoArgInstruction(DUP);
+        output.addNoArgInstruction(ATHROW);
 
-        // throwExpression.codegen(output);
-        // if (throwExpression.type() == Type.INT
-        //     || throwExpression.type() == Type.BOOLEAN
-        //     || throwExpression.type() == Type.CHAR) {
-        //     output.addNoArgInstruction(IRETURN);
-        // } else {
-        //     output.addNoArgInstruction(ARETURN);
-        // }
+
 }
 
 	/** {@inheritDoc} */

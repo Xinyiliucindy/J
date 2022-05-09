@@ -57,6 +57,9 @@ class Type {
     /** java.lang.Boolean. */
     public final static Type BOXED_BOOLEAN = typeFor(java.lang.Boolean.class);
 
+    /** java.lang.Exception */
+    public final static Type EXCEPTION = typeFor(java.lang.Exception.class);
+    
     /** The type java.lang.String. */
     public static Type STRING = typeFor(java.lang.String.class);
 
