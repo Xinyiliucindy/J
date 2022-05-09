@@ -157,14 +157,14 @@ class JMethodDeclaration extends JAST implements JMember {
             // Offset 0 is used to address "this".
             this.context.nextOffset();
         }
-        if(isThrows){
-            for(TypeName exception : exceptionClauses){
-                exception.resolve(context);
-                if(!Throwable.class.isAssignableFrom(exception.classRep())){
-                    JAST.compilationUnit.reportSemanticError(line(), "Exception " + exception + " is not a subclass of Throwable");
-                }
-            }
-        }
+        // if(isThrows){
+        //     for(TypeName exception : exceptionClauses){
+        //         exception.resolve(context);
+        //         if(!Throwable.class.isAssignableFrom(exception.classRep())){
+        //             JAST.compilationUnit.reportSemanticError(line(), "Exception " + exception + " is not a subclass of Throwable");
+        //         }
+        //     }
+        // }
 
         // Declare the parameters. We consider a formal parameter 
         // to be always initialized, via a function call.
