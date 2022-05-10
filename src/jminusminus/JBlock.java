@@ -13,12 +13,12 @@ import java.util.ArrayList;
 class JBlock extends JStatement {
 
     /** List of statements forming the block body. */
-    protected ArrayList<JStatement> statements;
+    private ArrayList<JStatement> statements;
 
     /**
      * The new context (built in analyze()) represented by this block.
      */
-    protected LocalContext context;
+    private LocalContext context;
 
     /**
      * Constructs an AST node for a block given its line number, and the list of
