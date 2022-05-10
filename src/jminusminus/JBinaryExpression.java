@@ -116,7 +116,6 @@ class JPlusOp extends JBinaryExpression {
         }
         return this;
     }
-
     /**
      * Any string concatenation has been rewritten as a 
      * {@link JStringConcatenationOp} (in {@code analyze}), so code generation 

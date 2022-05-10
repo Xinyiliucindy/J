@@ -7,6 +7,6 @@ public class Questioncolon {
     }
     public static void main(String[] args) {
         int m=0;
-        System.out.println("The number of loop is: " + Questioncolon.questioncolon(m));
+        System.out.println("The result is: " + Questioncolon.questioncolon(m));
     }
 }

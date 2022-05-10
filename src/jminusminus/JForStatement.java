@@ -127,7 +127,7 @@ class JForStatement extends JStatement{
 		    this.forCondition = new JLessOp(line, indexVar, new JFieldSelection(line, condition, "length"));
 		
 		    //Set update
-		    JExpression incExpr = new JPostIncrementOp(line, indexVar);
+		    JExpression incExpr = new JPostIncrementOps(line, indexVar);
 		    incExpr.isStatementExpression = true;
 		    this.forUpdate = new JStatementExpression(line, incExpr);
 
