@@ -102,6 +102,9 @@ class JConstructorDeclaration extends JMethodDeclaration implements JMember{
                                              this.context.nextOffset());
             defn.initialize();
             this.context.addEntry(param.line(), param.name(), defn);
+            if (defn.type() == Type.DOUBLE) {
+                this.context.nextOffset();
+            }
         }
 
         if(isThrows){

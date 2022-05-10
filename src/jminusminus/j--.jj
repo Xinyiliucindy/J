@@ -269,7 +269,10 @@ TOKEN: {
 | <CHAR_LITERAL: "'" (<ESC> | ~["'","\\","\n","\r"]) "'" >
 | <STRING_LITERAL: "\"" (<ESC> | ~["\"","\\","\n","\r"])* "\"" >
 | <#ESC: "\\" ["n","t","b","r","f","\\","'","\""] >
-| <DOUBLE_LITERAL: ((<DIGIT>)*) "." (<DIGIT> (<DIGIT>)*)>
+| <#EXPONENT: ["e","E"](["+","-"])? (<DIGIT>)+>
+| <#DOUBLE_END: ["d","D"]>
+| <DOUBLE_LITERAL: "."(<DIGIT>)* (<EXPONENT>(<DOUBLE_END>)?|(<DOUBLE_END>)?) 
+                  |(<DIGIT>)+ "."(<DIGIT>)* (<EXPONENT>(<DOUBLE_END>)?|(<DOUBLE_END>)?) >
 
 }
 

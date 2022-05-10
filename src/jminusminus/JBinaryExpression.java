@@ -100,26 +100,19 @@ class JPlusOp extends JBinaryExpression {
     public JExpression analyze(Context context) {
         lhs = (JExpression) lhs.analyze(context);
         rhs = (JExpression) rhs.analyze(context);
-        if (lhs.type() == Type.DOUBLE) {
+        if (lhs.type() == Type.STRING || rhs.type() == Type.STRING) {
+            return (new JStringConcatenationOp(line, lhs, rhs))
+                    .analyze(context);
+        } else if (lhs.type() == Type.INT && rhs.type() == Type.INT) {
+            type = Type.INT;
+        } else if (lhs.type().equals(Type.DOUBLE)) {
             lhs.type().mustMatchExpected(line(), Type.DOUBLE);
             rhs.type().mustMatchExpected(line(), Type.DOUBLE);
             type = Type.DOUBLE;
-
-        }
-        else if (lhs.type() == Type.INT) {
-            lhs.type().mustMatchExpected(line(), Type.INT);
-            if (rhs.type() == Type.INT){
-                rhs.type().mustMatchExpected(line(), Type.INT);
-                type = Type.INT;
-            }
-            else{
-                rhs.type().mustMatchExpected(line(), Type.DOUBLE);
-                type = Type.DOUBLE;
-
-            }
-        }
-        else {
-            type = Type.NULLTYPE;
+        }  else {
+            type = Type.ANY;
+            JAST.compilationUnit.reportSemanticError(line(),
+                    "Invalid operand types for +");
         }
         return this;
     }
