@@ -17,33 +17,33 @@ public class JInitializationBlock extends JMethodDeclaration implements JMember{
         super(line, mods, "Initialization Block", Type.VOID, new ArrayList<JFormalParameter>(), null, body); 
     }
 
-    public void preAnalyze(Context context, CLEmitter partial) {
-        super.preAnalyze(context, partial);
-        if (isPublic) {
-            JAST.compilationUnit.reportSemanticError(line(), "Initialization block can't be public");
-        }
-        if (isAbstract) {
-            JAST.compilationUnit.reportSemanticError(line(), "Initialization block can't be abstract");
-        }
-        if (isPrivate) {
-            JAST.compilationUnit.reportSemanticError(line(), "Initialization block can't be private");
-        }
-        if (mods.contains("protected")) {
-            JAST.compilationUnit.reportSemanticError(line(), "Initialization block can't be protected");
-        }
-        // if (body.statements().size() > 0
-        //         && body.statements().get(0) instanceof JStatementExpression) {
-        //     JStatementExpression first = (JStatementExpression) body.statements().get(0);
-        //     if (first.expr instanceof JSuperConstruction) {
-        //         ((JSuperConstruction) first.expr).markProperUseOfConstructor();
-        //         invokesConstructor = true;
-        //     } else if (first.expr instanceof JThisConstruction) {
-        //         ((JThisConstruction) first.expr).markProperUseOfConstructor();
-        //         invokesConstructor = true;
-        //     }
-        // }
+    // public void preAnalyze(Context context, CLEmitter partial) {
+    //     super.preAnalyze(context, partial);
+    //     if (isPublic) {
+    //         JAST.compilationUnit.reportSemanticError(line(), "Initialization block can't be public");
+    //     }
+    //     if (isAbstract) {
+    //         JAST.compilationUnit.reportSemanticError(line(), "Initialization block can't be abstract");
+    //     }
+    //     if (isPrivate) {
+    //         JAST.compilationUnit.reportSemanticError(line(), "Initialization block can't be private");
+    //     }
+    //     if (mods.contains("protected")) {
+    //         JAST.compilationUnit.reportSemanticError(line(), "Initialization block can't be protected");
+    //     }
+    //     // if (body.statements().size() > 0
+    //     //         && body.statements().get(0) instanceof JStatementExpression) {
+    //     //     JStatementExpression first = (JStatementExpression) body.statements().get(0);
+    //     //     if (first.expr instanceof JSuperConstruction) {
+    //     //         ((JSuperConstruction) first.expr).markProperUseOfConstructor();
+    //     //         invokesConstructor = true;
+    //     //     } else if (first.expr instanceof JThisConstruction) {
+    //     //         ((JThisConstruction) first.expr).markProperUseOfConstructor();
+    //     //         invokesConstructor = true;
+    //     //     }
+    //     // }
 
-    }
+    // }
 
     public JAST analyze(Context context) {
         definingClass = (JClassDeclaration) (context.classContext().definition());

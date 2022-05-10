@@ -1,7 +1,7 @@
 package pass;
 
 import java.lang.System;
-import java.nio.file.SecureDirectoryStream;
+// import java.nio.file.SecureDirectoryStream;
 
 interface FirstInterface {
     public abstract void myFirstMethod(); // interface method
