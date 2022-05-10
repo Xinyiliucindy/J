@@ -3,6 +3,9 @@
 package jminusminus;
 
 import java.util.ArrayList;
+
+import javax.lang.model.type.TypeMirror;
+
 import static jminusminus.CLConstants.*;
 
 /**
@@ -47,9 +50,15 @@ class JMethodDeclaration extends JAST implements JMember {
     /** Is this method private? */
     protected boolean isPrivate;
 
+<<<<<<< HEAD
     /** Does this method throws ? */
     protected boolean isThrows;
 
+=======
+    protected boolean isPublic;
+
+    protected ArrayList<TypeName> exceptionList;
+>>>>>>> xinyi
 
     /**
      * Constructs an AST node for a method declaration given the
@@ -73,7 +82,11 @@ class JMethodDeclaration extends JAST implements JMember {
 
     public JMethodDeclaration(int line, ArrayList<String> mods,
         String name, Type returnType,
+<<<<<<< HEAD
         ArrayList<JFormalParameter> params, ArrayList<TypeName> exceptionClauses, JBlock body)
+=======
+        ArrayList<JFormalParameter> params, ArrayList<TypeName> exceptionList, JBlock body)
+>>>>>>> xinyi
 
     {
         super(line);
@@ -86,12 +99,17 @@ class JMethodDeclaration extends JAST implements JMember {
         this.isAbstract = mods.contains("abstract");
         this.isStatic = mods.contains("static");
         this.isPrivate = mods.contains("private");
+<<<<<<< HEAD
         if(exceptionClauses.isEmpty() || exceptionClauses == null){
             this.isThrows = false;
         }else{
             this.isThrows = true;
         }
         exceptionNames = new ArrayList<>();
+=======
+        this.isPublic = mods.contains("public");
+        this.exceptionList = exceptionList;
+>>>>>>> xinyi
     }
 
     /**
@@ -264,6 +282,7 @@ class JMethodDeclaration extends JAST implements JMember {
             }
             p.println("</FormalParameters>");
         }
+<<<<<<< HEAD
 
         if (exceptionClauses != null || exceptionClauses.isEmpty() == false) {
             p.println("<ThrowsClauses>");
@@ -274,6 +293,16 @@ class JMethodDeclaration extends JAST implements JMember {
             p.indentLeft();
 
             p.println("</ThrowsClauses>");
+=======
+        if (exceptionList != null) {
+            p.println("<Exceptions>");
+            p.indentRight();
+            for (TypeName exception : exceptionList) {
+                p.printf("<Exception name=\"%s\">\n", exception.toString());
+            }
+            p.indentLeft();
+            p.println("</Exceptions>");
+>>>>>>> xinyi
         }
         if (body != null) {
             p.println("<Body>");

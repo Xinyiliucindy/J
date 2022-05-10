@@ -7,19 +7,41 @@ compilationUnit ::= [PACKAGE qualifiedIdentifier SEMI]
 
 qualifiedIdentifier ::= IDENTIFIER {DOT IDENTIFIER}
 
-typeDeclaration ::= modifiers classDeclaration
+typeDeclaration ::= typeDeclarationModifier (classDeclaration | interfaceDeclaration) | SEMI            // step 2
 
-modifiers ::= {PUBLIC | PROTECTED | PRIVATE | STATIC | ABSTRACT}
+typeDeclarationModifier ::= {PUBLIC | PROTECTED | PRIVATE | STATIC | ABSTRACT | FINAL | STRICTFP }      // step 2  
 
-classDeclaration ::= CLASS IDENTIFIER 
-                       [EXTENDS qualifiedIdentifier] 
+classDeclaration ::= CLASS IDENTIFIER [EXTENDS qualifiedIdentifier]                                     // step 2  
+                      [IMPLEMENTS qualifiedIdentifier {COMMA qualifiedIdentifier}]
                        classBody
 
-classBody ::= LCURLY {modifiers memberDecl} RCURLY
+classBody ::= LCURLY { SEMI | STATIC block
+                      | block | modifiers memberDecl} RCURLY
 
+<<<<<<< HEAD
 memberDecl ::= IDENTIFIER            // constructor
                  formalParameters 
                     [ THROWS qualifiedIdentifier { COMMA qualifiedIdentifier } ]
+=======
+interfaceDeclaration ::= INTERFACE IDENTIFIER  // can't be final                                        // step 2              
+                         [EXTENDS qualifiedIdentifier {COMMA qualifiedIdentifier}]
+                         interfaceBody 
+
+interfaceBody ::= LCURLY { SEMI | modifier interfaceMemberDecl } RCURLY                                 // step 2
+
+interfaceMemberDecl ::= classDeclaration  // inner class                                                // step 2
+                       | interfaceDeclaration  // inner interface
+                       | (VOID | type) IDENTIFIER   // method
+                          formalParameters { LBRACK RBRACK } [THROWS qualifiedIdentifier {COMMA qualifiedIdentifier}] SEMI
+                       | type variableDeclarators SEMI   // fields; must have inits
+
+modifiers ::= {PUBLIC | PROTECTED | PRIVATE | STATIC | ABSTRACT}                                        // step 2
+
+memberDecl ::= classDeclaration       // inner class
+             | interfaceDeclaration   // inner interface
+              |  IDENTIFIER            // constructor
+                 formalParameters block
+>>>>>>> xinyi
              | (VOID | type) IDENTIFIER  // method
                  formalParameters
                     [ THROWS qualifiedIdentifier { COMMA qualifiedIdentifier } ] ( block | SEMI )(block | SEMI)

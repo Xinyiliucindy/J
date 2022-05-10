@@ -38,10 +38,17 @@ class JConstructorDeclaration extends JMethodDeclaration  {
      */
 
     public JConstructorDeclaration(int line, ArrayList<String> mods,
+<<<<<<< HEAD
             String name, ArrayList<JFormalParameter> params, ArrayList<TypeName> exceptionClauses, JBlock body)
 
     {
         super(line, mods, name, Type.CONSTRUCTOR, params, exceptionClauses, body);
+=======
+            String name, ArrayList<JFormalParameter> params, ArrayList<TypeName> exceptionList, JBlock body)
+
+    {
+        super(line, mods, name, Type.CONSTRUCTOR, params, exceptionList, body);
+>>>>>>> xinyi
     }
 
     /**

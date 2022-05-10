@@ -193,7 +193,10 @@ TOKEN: {
 | <THROW: "throw"> //step 3
 | <THROWS: "throws"> //step 3
 | <TRANSIENT: "transient"> //step 3
+<<<<<<< HEAD
 
+=======
+>>>>>>> xinyi
 | <TRY: "try"> //step 3
 | <TRUE: "true">
 | <VOID: "void">
@@ -205,6 +208,10 @@ TOKEN: {
 TOKEN: {
   <PLUS: "+">
 | <ASSIGN: "=">
+<<<<<<< HEAD
+=======
+
+>>>>>>> xinyi
 | <EQUAL: "==">
 | <GT: ">">
 | <GT_EQUAL: ">="> //step 3
@@ -220,7 +227,11 @@ TOKEN: {
 | <NOT_EQUAL: "!="> //step 3
 | <MINUS: "-">
 | <MINUS_ASSIGN: "-="> //step 3
+<<<<<<< HEAD
 | <DEC: "--"> //step 3
+=======
+| <DEC: "!-"> //step 3
+>>>>>>> xinyi
 | <PLUS_ASSIGN: "+=">
 | <STAR: "*">
 | <STAR_ASSIGN: "*="> //step 3
@@ -235,9 +246,15 @@ TOKEN: {
 | <USRIGHT: ">>>"> //step 3
 | <USR_ASSIGN: ">>>="> //step 3
 | <COMPLEMENT: "~"> //step 3
+<<<<<<< HEAD
 | <BTOR: "|"> //step 3
 | <BTOR_ASSIGN: "|="> //step 3
 | <LOR: "||"> //step 3
+=======
+| <BITWISE_OR: "|"> //step 3
+| <BITWISE_OR_ASSIGN: "|="> //step 3
+| <LOGICAL_OR: "||"> //step 3
+>>>>>>> xinyi
 | <QUESTION: "?"> //step 3
 }
 
@@ -265,11 +282,18 @@ TOKEN: {
 
 // Literals
 TOKEN: {
-  <INT_LITERAL: ("0" | <NON_ZERO_DIGIT> (<DIGIT>)*) >
+ <#EXPONENT: ["e","E"](["+","-"])?>
+| <#DOUBLE_END: ["d","D"]>
+| <DOUBLE_LITERAL: "."(<DIGIT>)* (<EXPONENT>(<DIGIT>)*(<DOUBLE_END>)?|(<DOUBLE_END>)?) 
+                  |(<DIGIT>)* "."(<DIGIT>)* (<EXPONENT>(<DIGIT>)*(<DOUBLE_END>)?|(<DOUBLE_END>)?) >
+| <INT_LITERAL: ("0" | <NON_ZERO_DIGIT> (<DIGIT>)*) >
 | <CHAR_LITERAL: "'" (<ESC> | ~["'","\\","\n","\r"]) "'" >
 | <STRING_LITERAL: "\"" (<ESC> | ~["\"","\\","\n","\r"])* "\"" >
 | <#ESC: "\\" ["n","t","b","r","f","\\","'","\""] >
+<<<<<<< HEAD
 | <DOUBLE_LITERAL: ((<DIGIT>)*) "." (<DIGIT> (<DIGIT>)*)>
+=======
+>>>>>>> xinyi
 
 }
 
@@ -373,7 +397,7 @@ private TypeName qualifiedIdentifier(): {
  * Parse a type declaration.
  * 
  * <pre>
- *   typeDeclaration ::= modifiers classDeclaration
+ *   typeDeclaration ::= modifiers (classDeclaration | interfaceDeclaration) | ;
  * </pre>
  * 
  * @return an AST for a typeDeclaration.
@@ -381,17 +405,26 @@ private TypeName qualifiedIdentifier(): {
 
 private JAST typeDeclaration(): {
     ArrayList<String> mods = null;
-    JAST classDeclaration = null;
+    JAST typeDeclaration = null;
+
 }
 {
     try {
-        mods = modifiers()
-        classDeclaration = classDeclaration(mods)
+            mods = modifiers()
+            (
+                LOOKAHEAD(<CLASS>)
+                typeDeclaration = classDeclaration(mods)
+                |
+                LOOKAHEAD(<INTERFACE>)
+                typeDeclaration = interfaceDeclaration(mods)
+            )
+            |
+            <SEMI>
     }
     catch (ParseException e) {
         recoverFromError(new int[] { SEMI, EOF }, e);
     }
-    { return classDeclaration; }
+    { return typeDeclaration; }
 }
 
 /**
@@ -481,6 +514,7 @@ private ArrayList<String> modifiers(): {
  * <pre>
  *   classDeclaration ::= CLASS IDENTIFIER
  *                        [EXTENDS qualifiedIdentifier]
+                          [IMPLEMENTS qualifiedIdentifier {COMMA qualifiedIdentifier}]
  *                        classBody
  * </pre>
  * 
@@ -495,6 +529,7 @@ private JClassDeclaration classDeclaration(ArrayList<String> mods): {
     String name = "";
     Type superClass = Type.OBJECT;
     ArrayList<JMember> classBody = null;
+    ArrayList<Type> implementedInterfaces = new ArrayList<Type>();
 }
 {
     try {
@@ -503,13 +538,21 @@ private JClassDeclaration classDeclaration(ArrayList<String> mods): {
         [
             <EXTENDS> superClass = qualifiedIdentifier()
         ]
+        [
+            <IMPLEMENTS>
+            { implementedInterfaces.add(qualifiedIdentifier()); }
+            (
+                <COMMA>
+                {implementedInterfaces.add(qualifiedIdentifier()); }
+            )*
+        ]
         classBody = classBody()
     }
     catch (ParseException e) {
         recoverFromError(new int[] { SEMI, EOF }, e);
     }
     {
-        return new JClassDeclaration(line, mods, name, superClass, classBody);
+        return new JClassDeclaration(line, mods, name, superClass, implementedInterfaces, classBody);
     }
 }
 
@@ -518,7 +561,8 @@ private JClassDeclaration classDeclaration(ArrayList<String> mods): {
  * 
  * <pre>
  *   classBody ::= LCURLY
- *                   {modifiers memberDecl}
+ *                   { SEMI | STATIC block
+                    | block | modifiers memberDecl}
  *                 RCURLY
  * </pre>
  * 
@@ -526,6 +570,110 @@ private JClassDeclaration classDeclaration(ArrayList<String> mods): {
  */
 
 private ArrayList<JMember> classBody(): {
+    int line = 0;
+    ArrayList<JMember> members = new ArrayList<JMember>();
+    ArrayList<String> mods = new ArrayList<String>();
+    JMember aMember        = null;
+    JBlock body = null;
+}
+{
+    try {
+        <LCURLY>
+        (
+            LOOKAHEAD(<LCURLY>)
+            (
+                mods = modifiers()
+                { line = token.beginLine; }
+                body = block()
+                {
+                    aMember = new JInitializationBlock(line, mods, body); 
+                    members.add(aMember);
+                }
+            ) |
+            LOOKAHEAD(<STATIC> <LCURLY>)
+            <STATIC>
+            (
+                mods = modifiers()
+                { 
+                    line = token.beginLine;
+                    mods.add("static"); 
+                }
+                body = block()
+                {
+                    aMember = new JInitializationBlock(line, mods, body); 
+                    members.add(aMember);
+                }
+            ) |
+            mods = modifiers()
+            aMember = memberDecl(mods) 
+            { 
+                    members.add(aMember); 
+            } 
+
+        )*
+        <RCURLY>
+    }
+    catch (ParseException e) {
+        recoverFromError(new int[] { SEMI, EOF }, e);
+    }
+    { return members; }
+}
+
+/**
+* Parse an interface declaration.
+* 
+* <pre>
+    interfaceDeclaration ::= INTERFACE IDENTIFIER  // can't be final                                        // step 2              
+                    [EXTENDS qualifiedIdentifier {COMMA qualifiedIdentifier}]
+                    interfaceBody 
+* </pre>
+* 
+* A class which doesn't explicitly extend another (super) class implicitly
+* extends the superclass java.lang.Object.
+* 
+* @param mods
+*            the interface modifiers.
+* @return an AST for a interfaceDeclaration.
+*/
+
+private JInterfaceDeclaration interfaceDeclaration(ArrayList<String> mods): {
+    int line = 0;
+    ArrayList<JMember> interfaceBody = null;
+    String name = "";
+    ArrayList<Type> superInterfaces = new ArrayList<Type>();
+}
+{
+    try{
+        <INTERFACE> { line = token.beginLine; }
+        <IDENTIFIER> { name = token.image; }
+        [
+            <EXTENDS>
+            {superInterfaces.add(qualifiedIdentifier());}
+            (
+                <COMMA>
+                {superInterfaces.add(qualifiedIdentifier());}
+            )*
+        ]
+        interfaceBody = interfaceBody()
+    }
+    catch(ParseException e) {
+        recoverFromError(new int[] { SEMI, EOF }, e);
+    }
+    { return new JInterfaceDeclaration(line, mods, name, superInterfaces, interfaceBody); }
+}
+
+
+/**
+* Parse an interface body.
+* 
+* <pre>
+*   interfaceBody ::= LCURLY { SEMI | modifier interfaceMemberDecl } RCURLY   
+* </pre>
+* 
+* @return list of members in the interface body.
+*/
+
+private ArrayList<JMember> interfaceBody(): {
     ArrayList<String> mods = null;
     JMember aMember        = null;
     ArrayList<JMember> members = new ArrayList<JMember>();
@@ -535,7 +683,8 @@ private ArrayList<JMember> classBody(): {
         <LCURLY>
         (
             mods = modifiers()
-            aMember = memberDecl(mods) { members.add(aMember); }
+            aMember = interfaceMemberDecl(mods) 
+            { members.add(aMember); }
         )*
         <RCURLY>
     }
@@ -546,12 +695,101 @@ private ArrayList<JMember> classBody(): {
 }
 
 
+<<<<<<< HEAD
 //step 3 Throws
+=======
+/**
+* Parse an interfacemember declaration.
+* 
+* <pre>
+*    interfaceMemberDecl ::= classDeclaration  // inner class                                                // step 2
+                | interfaceDeclaration  // inner interface
+                | (VOID | type) IDENTIFIER   // method
+                    formalParameters { LBRACK RBRACK } [THROWS qualifiedIdentifier {COMMA qualifiedIdentifier}] SEMI
+                | type variableDeclarators SEMI   // fields; must have inits
+* </pre>
+* @param mods
+*            the interface member modifiers.
+*  @return an AST for a interface memberDecl.
+*/
+
+private JMember interfaceMemberDecl(ArrayList<String> mods): {
+    ArrayList<JMember> members = new ArrayList<JMember>();
+    int line = 0;
+    String name = "";
+    Type type = null;
+    ArrayList<TypeName> exceptions = new ArrayList<TypeName>();
+    JAST classDeclaration = null;
+    JAST interfaceDeclaration = null;
+    ArrayList<JFormalParameter> params = null;
+    ArrayList<JVariableDeclarator> variableDeclarators = null;
+    JMember interfaceMember = null;
+}
+{
+    try {
+            LOOKAHEAD((<VOID> | type()) <IDENTIFIER> <LPAREN>)
+            (
+                (
+                    <VOID> { type = Type.VOID; } |
+                    type = type()
+                )   
+                { line = token.beginLine;}
+                <IDENTIFIER> { name = token.image; }
+                params = formalParameters()
+                (
+                    <LBRACK>
+                    <RBRACK>
+                )*
+                [
+                    LOOKAHEAD(<THROWS>)
+                    <THROWS>
+                    {exceptions.add(qualifiedIdentifier());}
+                    (
+                        <COMMA>
+                        {exceptions.add(qualifiedIdentifier()); }
+                    )*  
+                ]
+                <SEMI> 
+                {
+                    if(!mods.contains("abstract")) {
+                        mods.add("abstract");
+                    }                
+                    if(!mods.contains("public")) {
+                        mods.add("public");
+                    }
+                    interfaceMember = new JMethodDeclaration(line, mods, name,
+                                                        type, params, exceptions, null);
+                }
+            )   |
+            (
+                type = type() { line = token.beginLine; }
+                variableDeclarators = variableDeclarators(type)
+                <SEMI>
+                {
+                    if (!mods.contains("static")) {
+                        mods.add("static");
+                    }
+                    interfaceMember = new JFieldDeclaration(line, mods,
+                                                    variableDeclarators);
+                }
+            )
+   }
+    catch(ParseException e) {
+    recoverFromError(new int[] { SEMI, EOF }, e);
+    }
+    { return interfaceMember; }
+}
+
+
+
+>>>>>>> xinyi
 /**
  * Parse a member declaration.
  * 
  * <pre>
- *   memberDecl ::= IDENTIFIER            // constructor
+ *   memberDecl ::= classDeclaration       // inner class
+                    | interfaceDeclaration   // inner interface
+                  |  IDENTIFIER            // constructor
  *                    formalParameters
  *                    block
  *                | (VOID | type) IDENTIFIER  // method
@@ -573,11 +811,24 @@ private JMember memberDecl(ArrayList<String> mods): {
     JBlock body = null;
     ArrayList<JVariableDeclarator> variableDeclarators = null;
     JMember memberDecl = null;
+<<<<<<< HEAD
     TypeName exception = null;
     ArrayList<TypeName> exceptionClauses = new ArrayList<TypeName>();
+=======
+    JAST classDeclaration = null;
+    JAST interfaceDeclaration = null; 
+    ArrayList<TypeName> exceptions = new ArrayList<TypeName>();
+>>>>>>> xinyi
 }
 {
     try {
+        mods = modifiers()
+        (
+            classDeclaration = classDeclaration(mods)
+            |
+            interfaceDeclaration = interfaceDeclaration(mods)
+        )
+        |
         LOOKAHEAD(<IDENTIFIER> <LPAREN>)
         (
             <IDENTIFIER>
@@ -586,6 +837,7 @@ private JMember memberDecl(ArrayList<String> mods): {
                 name = token.image;
             }
             params = formalParameters()
+<<<<<<< HEAD
              [
                 <THROWS> 
                 exception = qualifiedIdentifier()
@@ -594,12 +846,25 @@ private JMember memberDecl(ArrayList<String> mods): {
                     <COMMA>
                     exception = qualifiedIdentifier()
                     { exceptionClauses.add(exception); }
+=======
+            [
+                LOOKAHEAD(<THROWS>)
+                <THROWS>
+                { exceptions.add(qualifiedIdentifier());}
+                (
+                    <COMMA>
+                    {exceptions.add(qualifiedIdentifier()); }
+>>>>>>> xinyi
                 )*
             ]
             body = block()
             {
                 memberDecl = new JConstructorDeclaration(line, mods,
+<<<<<<< HEAD
                                                          name, params, exceptionClauses , body);
+=======
+                                                         name, params, exceptions, body);
+>>>>>>> xinyi
             }
         ) |
         LOOKAHEAD((<VOID> | type()) <IDENTIFIER> <LPAREN>)
@@ -612,6 +877,7 @@ private JMember memberDecl(ArrayList<String> mods): {
             <IDENTIFIER> { name = token.image; }
             params = formalParameters() 
             [
+<<<<<<< HEAD
                 <THROWS> exception = qualifiedIdentifier()
                 { exceptionClauses.add(exception); }
                 (
@@ -621,13 +887,27 @@ private JMember memberDecl(ArrayList<String> mods): {
                 )*
             ]
 
+=======
+                LOOKAHEAD(<THROWS>)
+                <THROWS>
+                { exceptions.add(qualifiedIdentifier());}
+                (
+                    <COMMA>
+                    {exceptions.add(qualifiedIdentifier()); }
+                )*
+            ]
+>>>>>>> xinyi
             (
                 body = block() |
                 <SEMI>
             )
             {
                 memberDecl = new JMethodDeclaration(line, mods, name,
+<<<<<<< HEAD
                                                     type, params, exceptionClauses, body);
+=======
+                                                    type, params, exceptions, body);
+>>>>>>> xinyi
             }
         ) |
         (

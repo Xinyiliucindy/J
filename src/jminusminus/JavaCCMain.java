@@ -5,6 +5,10 @@ package jminusminus;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> xinyi
 /**
  * Driver class for j-- compiler using JavaCC front-end. This is the main entry
  * point for the compiler. The compiler proceeds as follows:
