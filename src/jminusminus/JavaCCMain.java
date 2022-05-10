@@ -5,10 +5,6 @@ package jminusminus;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
 /**
  * Driver class for j-- compiler using JavaCC front-end. This is the main entry
  * point for the compiler. The compiler proceeds as follows:

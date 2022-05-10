@@ -5,11 +5,7 @@ package jminusminus;
 import java.beans.Statement;
 import java.util.ArrayList;
 
-<<<<<<< HEAD
-import javax.sql.rowset.spi.SyncFactory;
-=======
 //import javafx.scene.effect.Blend;
->>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
 
 // import jminusminus.JMultiplyOp;
 // import jminusminus.JDivideOp;
@@ -405,7 +401,7 @@ public class Parser {
      * Parse a type declaration.
      * 
      * <pre>
-     *   typeDeclaration ::= modifiers classDeclaration
+     *   typeDeclaration ::= modifiers (classDeclaration | interfaceDeclaration)
      * </pre>
      * 
      * @return an AST for a typeDeclaration.
@@ -673,7 +669,7 @@ public class Parser {
             mustBe(IDENTIFIER);
             String name = scanner.previousToken().image();
             ArrayList<JFormalParameter> params = formalParameters();
-            ArrayList<TypeName> exceptionList = new ArrayList<TypeName>();
+            ArrayList<Type> exceptionList = new ArrayList<Type>();
             if(see(THROWS)) {
                 do {
                     exceptionList.add(qualifiedIdentifier());
@@ -688,7 +684,7 @@ public class Parser {
                 mustBe(IDENTIFIER);
                 String name = scanner.previousToken().image();
                 ArrayList<JFormalParameter> params = formalParameters();
-                ArrayList<TypeName> exceptionList = new ArrayList<TypeName>();
+                ArrayList<Type> exceptionList = new ArrayList<Type>();
                 if(see(THROWS)) {
                     do {
                         exceptionList.add(qualifiedIdentifier());
@@ -739,17 +735,6 @@ public class Parser {
             mustBe(IDENTIFIER);
             String name = scanner.previousToken().image();
             ArrayList<JFormalParameter> params = formalParameters();
-<<<<<<< HEAD
-            ArrayList<TypeName> exceptionList = new ArrayList<TypeName>();
-            if(see(THROWS)) {
-                do {
-                    exceptionList.add(qualifiedIdentifier());
-                }while (have(COMMA));
-            }
-            JBlock body = block();
-            memberDecl = new JConstructorDeclaration(line, mods, name, params,
-                     exceptionList, body);
-=======
             ArrayList<Type> exceptionClauses = new ArrayList<Type>();
             if (have(THROWS)) {
                 do
@@ -758,7 +743,6 @@ public class Parser {
             }
             JBlock body = block();
             memberDecl = new JConstructorDeclaration(line, mods, name, params, exceptionClauses, body);
->>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
         } else {
             Type type = null;
             if (have(VOID)) { // void method
@@ -766,17 +750,6 @@ public class Parser {
                 mustBe(IDENTIFIER);
                 String name = scanner.previousToken().image();
                 ArrayList<JFormalParameter> params = formalParameters();
-<<<<<<< HEAD
-                ArrayList<TypeName> exceptionList = new ArrayList<TypeName>();
-                if(see(THROWS)) {
-                    do {
-                        exceptionList.add(qualifiedIdentifier());
-                    }while (have(COMMA));
-                }
-                JBlock body = have(SEMI) ? null : block();
-                memberDecl = new JMethodDeclaration(line, mods, name, type,
-                        params, exceptionList, body);
-=======
                 ArrayList<Type> exceptionClauses = new ArrayList<Type>();
                 if (have(THROWS)) {
                     do
@@ -785,24 +758,12 @@ public class Parser {
                 }
                 JBlock body = have(SEMI) ? null : block();
                 memberDecl = new JMethodDeclaration(line, mods, name, type, params, exceptionClauses, body);
->>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
             } else {
                 type = type();
                 if (seeIdentLParen()) {// Non void method
                     mustBe(IDENTIFIER);
                     String name = scanner.previousToken().image();
                     ArrayList<JFormalParameter> params = formalParameters();
-<<<<<<< HEAD
-                    ArrayList<TypeName> exceptionList = new ArrayList<TypeName>();
-                    if(see(THROWS)) {
-                        do {
-                            exceptionList.add(qualifiedIdentifier());
-                        }while (have(COMMA));
-                    }
-                    JBlock body = have(SEMI) ? null : block();
-                    memberDecl = new JMethodDeclaration(line, mods, name, type,
-                            params, exceptionList, body);
-=======
                     ArrayList<Type> exceptionClauses = new ArrayList<Type>();
                     if (have(THROWS)) {
                         do
@@ -811,7 +772,6 @@ public class Parser {
                     }
                     JBlock body = have(SEMI) ? null : block();
                     memberDecl = new JMethodDeclaration(line, mods, name, type, params, exceptionClauses, body);
->>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
                 } else {
                     // Field
                     memberDecl = new JFieldDeclaration(line, mods,

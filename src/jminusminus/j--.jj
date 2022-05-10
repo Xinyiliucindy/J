@@ -193,10 +193,7 @@ TOKEN: {
 | <THROW: "throw"> //step 3
 | <THROWS: "throws"> //step 3
 | <TRANSIENT: "transient"> //step 3
-<<<<<<< HEAD
-=======
 
->>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
 | <TRY: "try"> //step 3
 | <TRUE: "true">
 | <VOID: "void">
@@ -208,10 +205,6 @@ TOKEN: {
 TOKEN: {
   <PLUS: "+">
 | <ASSIGN: "=">
-<<<<<<< HEAD
-
-=======
->>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
 | <EQUAL: "==">
 | <GT: ">">
 | <GT_EQUAL: ">="> //step 3
@@ -227,11 +220,7 @@ TOKEN: {
 | <NOT_EQUAL: "!="> //step 3
 | <MINUS: "-">
 | <MINUS_ASSIGN: "-="> //step 3
-<<<<<<< HEAD
-| <DEC: "!-"> //step 3
-=======
 | <DEC: "--"> //step 3
->>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
 | <PLUS_ASSIGN: "+=">
 | <STAR: "*">
 | <STAR_ASSIGN: "*="> //step 3
@@ -246,15 +235,9 @@ TOKEN: {
 | <USRIGHT: ">>>"> //step 3
 | <USR_ASSIGN: ">>>="> //step 3
 | <COMPLEMENT: "~"> //step 3
-<<<<<<< HEAD
-| <BITWISE_OR: "|"> //step 3
-| <BITWISE_OR_ASSIGN: "|="> //step 3
-| <LOGICAL_OR: "||"> //step 3
-=======
 | <BTOR: "|"> //step 3
 | <BTOR_ASSIGN: "|="> //step 3
 | <LOR: "||"> //step 3
->>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
 | <QUESTION: "?"> //step 3
 }
 
@@ -282,20 +265,17 @@ TOKEN: {
 
 // Literals
 TOKEN: {
- <#EXPONENT: ["e","E"](["+","-"])?>
-| <#DOUBLE_END: ["d","D"]>
-| <DOUBLE_LITERAL: "."(<DIGIT>)* (<EXPONENT>(<DIGIT>)*(<DOUBLE_END>)?|(<DOUBLE_END>)?) 
-                  |(<DIGIT>)* "."(<DIGIT>)* (<EXPONENT>(<DIGIT>)*(<DOUBLE_END>)?|(<DOUBLE_END>)?) >
-| <INT_LITERAL: ("0" | <NON_ZERO_DIGIT> (<DIGIT>)*) >
+  <INT_LITERAL: ("0" | <NON_ZERO_DIGIT> (<DIGIT>)*) >
 | <CHAR_LITERAL: "'" (<ESC> | ~["'","\\","\n","\r"]) "'" >
 | <STRING_LITERAL: "\"" (<ESC> | ~["\"","\\","\n","\r"])* "\"" >
 | <#ESC: "\\" ["n","t","b","r","f","\\","'","\""] >
-<<<<<<< HEAD
-=======
-| <DOUBLE_LITERAL: ((<DIGIT>)*) "." (<DIGIT> (<DIGIT>)*)>
->>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
+| <#EXPONENT: ["e","E"](["+","-"])? (<DIGIT>)+>
+| <#DOUBLE_END: ["d","D"]>
+| <DOUBLE_LITERAL: "."(<DIGIT>)* (<EXPONENT>(<DOUBLE_END>)?|(<DOUBLE_END>)?) 
+                  |(<DIGIT>)+ "."(<DIGIT>)* (<EXPONENT>(<DOUBLE_END>)?|(<DOUBLE_END>)?) >
 
 }
+
 
 // For anything else, we return an ERROR token. Without this 
 // definition the TokenManager will throw an Error when a lexical 
@@ -695,7 +675,6 @@ private ArrayList<JMember> interfaceBody(): {
 }
 
 
-<<<<<<< HEAD
 /**
 * Parse an interfacemember declaration.
 * 
@@ -716,7 +695,7 @@ private JMember interfaceMemberDecl(ArrayList<String> mods): {
     int line = 0;
     String name = "";
     Type type = null;
-    ArrayList<TypeName> exceptions = new ArrayList<TypeName>();
+    ArrayList<Type> exceptions = new ArrayList<Type>();
     JAST classDeclaration = null;
     JAST interfaceDeclaration = null;
     ArrayList<JFormalParameter> params = null;
@@ -780,9 +759,6 @@ private JMember interfaceMemberDecl(ArrayList<String> mods): {
 
 
 
-=======
-//step 3 Throws
->>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
 /**
  * Parse a member declaration.
  * 
@@ -811,14 +787,10 @@ private JMember memberDecl(ArrayList<String> mods): {
     JBlock body = null;
     ArrayList<JVariableDeclarator> variableDeclarators = null;
     JMember memberDecl = null;
-<<<<<<< HEAD
-    JAST classDeclaration = null;
-    JAST interfaceDeclaration = null; 
-    ArrayList<TypeName> exceptions = new ArrayList<TypeName>();
-=======
     Type exception = null;
     ArrayList<Type> exceptionClauses = new ArrayList<Type>();
->>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
+    JAST classDeclaration = null;
+    JAST interfaceDeclaration = null;
 }
 {
     try {
@@ -837,15 +809,6 @@ private JMember memberDecl(ArrayList<String> mods): {
                 name = token.image;
             }
             params = formalParameters()
-<<<<<<< HEAD
-            [
-                LOOKAHEAD(<THROWS>)
-                <THROWS>
-                { exceptions.add(qualifiedIdentifier());}
-                (
-                    <COMMA>
-                    {exceptions.add(qualifiedIdentifier()); }
-=======
              [
             LOOKAHEAD(<THROWS>)
                 <THROWS> 
@@ -855,17 +818,12 @@ private JMember memberDecl(ArrayList<String> mods): {
                     <COMMA>
                     exception = qualifiedIdentifier()
                     { exceptionClauses.add(exception); }
->>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
                 )*
             ]
             body = block()
             {
                 memberDecl = new JConstructorDeclaration(line, mods,
-<<<<<<< HEAD
-                                                         name, params, exceptions, body);
-=======
                                                          name, params, null, body);
->>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
             }
         ) |
         LOOKAHEAD((<VOID> | type()) <IDENTIFIER> <LPAREN>)
@@ -879,15 +837,6 @@ private JMember memberDecl(ArrayList<String> mods): {
             params = formalParameters() 
             [
                 LOOKAHEAD(<THROWS>)
-<<<<<<< HEAD
-                <THROWS>
-                { exceptions.add(qualifiedIdentifier());}
-                (
-                    <COMMA>
-                    {exceptions.add(qualifiedIdentifier()); }
-                )*
-            ]
-=======
                 <THROWS> exception = qualifiedIdentifier()
                 { exceptionClauses.add(exception); }
                 (
@@ -897,18 +846,13 @@ private JMember memberDecl(ArrayList<String> mods): {
                 )*
             ]
 
->>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
             (
                 body = block() |
                 <SEMI>
             )
             {
                 memberDecl = new JMethodDeclaration(line, mods, name,
-<<<<<<< HEAD
-                                                    type, params, exceptions, body);
-=======
                                                     type, params, exceptionClauses, body);
->>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
             }
         ) |
         (

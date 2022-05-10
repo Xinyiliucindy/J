@@ -38,7 +38,7 @@ class JConstructorDeclaration extends JMethodDeclaration  {
      */
 
     public JConstructorDeclaration(int line, ArrayList<String> mods,
-            String name, ArrayList<JFormalParameter> params, ArrayList<TypeName> exceptionList, JBlock body)
+            String name, ArrayList<JFormalParameter> params, ArrayList<Type> exceptionList, JBlock body)
 
     {
         super(line, mods, name, Type.CONSTRUCTOR, params, exceptionList, body);
@@ -102,6 +102,9 @@ class JConstructorDeclaration extends JMethodDeclaration  {
                                              this.context.nextOffset());
             defn.initialize();
             this.context.addEntry(param.line(), param.name(), defn);
+            if (defn.type() == Type.DOUBLE) {
+                this.context.nextOffset();
+            }
         }
 
         if (body != null) {
@@ -183,11 +186,11 @@ class JConstructorDeclaration extends JMethodDeclaration  {
             }
             p.println("</FormalParameters>");
         }
-        if (isThrows) {
+        if (exceptionClauses != null ) {
             p.println("<ThrowsExceptions>");
 
             p.indentRight();
-            for (TypeName exception : exceptionClauses)
+            for (Type exception : exceptionClauses)
                 p.printf("<ExceptionClauses name=\"%s\"/>\n", exception.toString());
             p.indentLeft();
 

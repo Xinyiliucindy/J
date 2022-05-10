@@ -18,7 +18,6 @@ classDeclaration ::= CLASS IDENTIFIER [EXTENDS qualifiedIdentifier]             
 classBody ::= LCURLY { SEMI | STATIC block
                       | block | modifiers memberDecl} RCURLY
 
-<<<<<<< HEAD
 interfaceDeclaration ::= INTERFACE IDENTIFIER  // can't be final                                        // step 2              
                          [EXTENDS qualifiedIdentifier {COMMA qualifiedIdentifier}]
                          interfaceBody 
@@ -37,11 +36,7 @@ memberDecl ::= classDeclaration       // inner class
              | interfaceDeclaration   // inner interface
               |  IDENTIFIER            // constructor
                  formalParameters block
-=======
-memberDecl ::= IDENTIFIER            // constructor
-                 formalParameters 
                     [ THROWS qualifiedIdentifier { COMMA qualifiedIdentifier } ]
->>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
              | (VOID | type) IDENTIFIER  // method
                  formalParameters
                     [ THROWS qualifiedIdentifier { COMMA qualifiedIdentifier } ] ( block | SEMI )(block | SEMI)

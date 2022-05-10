@@ -4,12 +4,9 @@ package jminusminus;
 
 import java.util.ArrayList;
 
-<<<<<<< HEAD
 import javax.lang.model.type.TypeMirror;
 
-=======
 import java.util.stream.Collectors;
->>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
 import static jminusminus.CLConstants.*;
 
 /**
@@ -54,15 +51,11 @@ class JMethodDeclaration extends JAST implements JMember {
     /** Is this method private? */
     protected boolean isPrivate;
 
-<<<<<<< HEAD
     protected boolean isPublic;
 
-    protected ArrayList<TypeName> exceptionList;
-=======
     /** Does this method throws ? */
-    protected boolean isThrows;
+    // protected boolean isThrows;
 
->>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
 
     /**
      * Constructs an AST node for a method declaration given the
@@ -86,11 +79,7 @@ class JMethodDeclaration extends JAST implements JMember {
 
     public JMethodDeclaration(int line, ArrayList<String> mods,
         String name, Type returnType,
-<<<<<<< HEAD
-        ArrayList<JFormalParameter> params, ArrayList<TypeName> exceptionList, JBlock body)
-=======
         ArrayList<JFormalParameter> params, ArrayList<Type> exceptionClauses, JBlock body)
->>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
 
     {
         super(line);
@@ -103,16 +92,12 @@ class JMethodDeclaration extends JAST implements JMember {
         this.isAbstract = mods.contains("abstract");
         this.isStatic = mods.contains("static");
         this.isPrivate = mods.contains("private");
-<<<<<<< HEAD
         this.isPublic = mods.contains("public");
-        this.exceptionList = exceptionList;
-=======
-        if(exceptionClauses.isEmpty() || exceptionClauses == null){
-            this.isThrows = false;
-        }else{
-            this.isThrows = true;
-        }
->>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
+        // if(exceptionClauses.isEmpty() || exceptionClauses == null){
+        //     this.isThrows = false;
+        // }else{
+        //     this.isThrows = true;
+        // }
     }
 
     /**
@@ -186,7 +171,7 @@ class JMethodDeclaration extends JAST implements JMember {
                     .stream()
                     .map(e -> e.resolve(context))
                     .collect(Collectors.toList());
-        if(isThrows){
+        if(exceptionClauses != null){
             for(Type exception : exceptionClauses){
                 exception.resolve(context);
                 if(!Throwable.class.isAssignableFrom(exception.classRep())) {
@@ -204,6 +189,9 @@ class JMethodDeclaration extends JAST implements JMember {
                 this.context.nextOffset());
             defn.initialize();
             this.context.addEntry(param.line(), param.name(), defn);
+            if (defn.type() == Type.DOUBLE) {
+                this.context.nextOffset();
+            }
         }
 
 
@@ -238,7 +226,10 @@ class JMethodDeclaration extends JAST implements JMember {
             || returnType == Type.BOOLEAN || returnType == Type.CHAR) {
             partial.addNoArgInstruction(ICONST_0);
             partial.addNoArgInstruction(IRETURN);
-        } else {
+        } else if (returnType == Type.DOUBLE) {
+            partial.addNoArgInstruction(DCONST_0);
+            partial.addNoArgInstruction(DRETURN);
+        }else {
             // A reference type.
             partial.addNoArgInstruction(ACONST_NULL);
             partial.addNoArgInstruction(ARETURN);
@@ -296,16 +287,6 @@ class JMethodDeclaration extends JAST implements JMember {
             }
             p.println("</FormalParameters>");
         }
-<<<<<<< HEAD
-        if (exceptionList != null) {
-            p.println("<Exceptions>");
-            p.indentRight();
-            for (TypeName exception : exceptionList) {
-                p.printf("<Exception name=\"%s\">\n", exception.toString());
-            }
-            p.indentLeft();
-            p.println("</Exceptions>");
-=======
 
         if (exceptionClauses != null || exceptionClauses.isEmpty() == false) {
             p.println("<ThrowsClauses>");
@@ -316,7 +297,6 @@ class JMethodDeclaration extends JAST implements JMember {
             p.indentLeft();
 
             p.println("</ThrowsClauses>");
->>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
         }
         if (body != null) {
             p.println("<Body>");
