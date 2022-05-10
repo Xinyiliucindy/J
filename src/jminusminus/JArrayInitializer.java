@@ -107,7 +107,9 @@ class JArrayInitializer extends JExpression {
                 output.addNoArgInstruction(BASTORE);
             } else if (componentType == Type.CHAR) {
                 output.addNoArgInstruction(CASTORE);
-            } else if (!componentType.isPrimitive()) {
+            } else if (componentType == Type.DOUBLE) {
+                output.addNoArgInstruction(DASTORE);
+            }else if (!componentType.isPrimitive()) {
                 output.addNoArgInstruction(AASTORE);
             }
         }

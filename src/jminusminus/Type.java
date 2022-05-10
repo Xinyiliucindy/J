@@ -38,7 +38,13 @@ class Type {
 
     /** The primitive type, char. */
     public final static Type CHAR = typeFor(char.class);
+    /** The primitive type, double. */
 
+    public final static Type DOUBLE = typeFor(double.class);
+    /** java.lang.Double. */
+
+    public final static Type BOXED_DOUBLE = typeFor(java.lang.Double.class);
+    
     /** The primitive type, boolean. */
     public final static Type BOOLEAN = typeFor(boolean.class);
 
@@ -51,6 +57,9 @@ class Type {
     /** java.lang.Boolean. */
     public final static Type BOXED_BOOLEAN = typeFor(java.lang.Boolean.class);
 
+    /** java.lang.Exception */
+    public final static Type EXCEPTION = typeFor(java.lang.Exception.class);
+    
     /** The type java.lang.String. */
     public static Type STRING = typeFor(java.lang.String.class);
 
@@ -426,10 +435,10 @@ class Type {
                 : cls.isArray() ? "[" + descriptorFor(cls.getComponentType())
                         : cls.isPrimitive() ? (cls == int.class ? "I"
                                 : cls == char.class ? "C"
+                                    :cls == double.class ? "D"  //geng step2 double
                                         : cls == boolean.class ? "Z" : "?")
                                 : "L" + cls.getName().replace('.', '/') + ";";
     }
-
     /**
      * The JVM representation for this type's name. This is also called the
      * internal form of the name. For example, java/lang/String for 

@@ -93,9 +93,9 @@ SSR_ASSIGN  ::= ">>="			// step 1
 USRIGHT		::= ">>>"			// step 0
 USR_ASSIGN	::= ">>>="			// step 1
 COMPLEMENT  ::= "~"				// step 0
-BITWISE_OR  ::= "|"				// step 0
-BITWISE_OR_ASSIGN ::= "|="		// step 1
-LOGICAL_OR  ::= "||"			// step 1
+BTOR  ::= "|"				// step 0
+BTOR_ASSIGN ::= "|="		// step 1
+LOR  		::= "||"			// step 1
 QUESTION    ::= "?"				// step 1
 
 

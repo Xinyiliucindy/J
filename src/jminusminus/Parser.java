@@ -2,9 +2,14 @@
 
 package jminusminus;
 
+import java.beans.Statement;
 import java.util.ArrayList;
 
+<<<<<<< HEAD
 import javax.sql.rowset.spi.SyncFactory;
+=======
+//import javafx.scene.effect.Blend;
+>>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
 
 // import jminusminus.JMultiplyOp;
 // import jminusminus.JDivideOp;
@@ -287,9 +292,9 @@ public class Parser {
      * 
      * @return true iff we're looking at a basic type; false otherwise.
      */
-
+    
     private boolean seeBasicType() {
-        return (see(BOOLEAN) || see(CHAR) || see(INT));
+        return (see(BOOLEAN) || see(CHAR) || see(INT) || see(DOUBLE));
     }
 
     /**
@@ -308,7 +313,7 @@ public class Parser {
             return true;
         } else {
             scanner.recordPosition();
-            if (have(BOOLEAN) || have(CHAR) || have(INT)) {
+            if (have(BOOLEAN) || have(CHAR) || have(INT)||have(DOUBLE)) {
                 if (have(LBRACK) && see(RBRACK)) {
                     scanner.returnToPosition();
                     return true;
@@ -730,10 +735,11 @@ public class Parser {
         int line = scanner.token().line();
         JMember memberDecl = null;
         if (seeIdentLParen()) {
-            // A constructor
+            // A constructor step 2 throws
             mustBe(IDENTIFIER);
             String name = scanner.previousToken().image();
             ArrayList<JFormalParameter> params = formalParameters();
+<<<<<<< HEAD
             ArrayList<TypeName> exceptionList = new ArrayList<TypeName>();
             if(see(THROWS)) {
                 do {
@@ -743,14 +749,24 @@ public class Parser {
             JBlock body = block();
             memberDecl = new JConstructorDeclaration(line, mods, name, params,
                      exceptionList, body);
+=======
+            ArrayList<Type> exceptionClauses = new ArrayList<Type>();
+            if (have(THROWS)) {
+                do
+                    exceptionClauses.add(qualifiedIdentifier());
+                while(have(COMMA));
+            }
+            JBlock body = block();
+            memberDecl = new JConstructorDeclaration(line, mods, name, params, exceptionClauses, body);
+>>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
         } else {
             Type type = null;
-            if (have(VOID)) {
-                // void method
+            if (have(VOID)) { // void method
                 type = Type.VOID;
                 mustBe(IDENTIFIER);
                 String name = scanner.previousToken().image();
                 ArrayList<JFormalParameter> params = formalParameters();
+<<<<<<< HEAD
                 ArrayList<TypeName> exceptionList = new ArrayList<TypeName>();
                 if(see(THROWS)) {
                     do {
@@ -760,13 +776,23 @@ public class Parser {
                 JBlock body = have(SEMI) ? null : block();
                 memberDecl = new JMethodDeclaration(line, mods, name, type,
                         params, exceptionList, body);
+=======
+                ArrayList<Type> exceptionClauses = new ArrayList<Type>();
+                if (have(THROWS)) {
+                    do
+                        exceptionClauses.add(qualifiedIdentifier());
+                    while(have(COMMA));
+                }
+                JBlock body = have(SEMI) ? null : block();
+                memberDecl = new JMethodDeclaration(line, mods, name, type, params, exceptionClauses, body);
+>>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
             } else {
                 type = type();
-                if (seeIdentLParen()) {
-                    // Non void method
+                if (seeIdentLParen()) {// Non void method
                     mustBe(IDENTIFIER);
                     String name = scanner.previousToken().image();
                     ArrayList<JFormalParameter> params = formalParameters();
+<<<<<<< HEAD
                     ArrayList<TypeName> exceptionList = new ArrayList<TypeName>();
                     if(see(THROWS)) {
                         do {
@@ -776,6 +802,16 @@ public class Parser {
                     JBlock body = have(SEMI) ? null : block();
                     memberDecl = new JMethodDeclaration(line, mods, name, type,
                             params, exceptionList, body);
+=======
+                    ArrayList<Type> exceptionClauses = new ArrayList<Type>();
+                    if (have(THROWS)) {
+                        do
+                            exceptionClauses.add(qualifiedIdentifier());
+                        while(have(COMMA));
+                    }
+                    JBlock body = have(SEMI) ? null : block();
+                    memberDecl = new JMethodDeclaration(line, mods, name, type, params, exceptionClauses, body);
+>>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
                 } else {
                     // Field
                     memberDecl = new JFieldDeclaration(line, mods,
@@ -833,6 +869,7 @@ public class Parser {
      * <pre>
      *   statement ::= block
      *               | IF parExpression statement [ELSE statement]
+     *               | FOR([forInit] SEMI [expression] SEMI [forUpdate]) statement
      *               | WHILE parExpression statement 
      *               | RETURN [expression] SEMI
      *               | SEMI 
@@ -865,12 +902,83 @@ public class Parser {
             }
         } else if (have(SEMI)) {
             return new JEmptyStatement(line);
-        } else { // Must be a statementExpression
+        } 
+        //step 2 try
+        else if (have(TRY)) {
+            return tryStatement();
+        } 
+        //step 2 throw 
+        else if(have(THROW)){
+            JExpression throwExpression = expression();
+            mustBe(SEMI);
+            return new JThrowStatement(line, throwExpression);
+        }
+        else { // Must be a statementExpression
             JStatement statement = statementExpression();
             mustBe(SEMI);
             return statement;
         }
     }
+    /**
+     * Parse tryStatement. step 2 try
+     *
+     * <pre>
+     *   tryStatement ::= TYR Block catchClause {catchClause} [FINALLY Block]
+     *   catchClause ::= CATCH catchFormalParameter Block
+     *   catchFormalParameter ::= LPAREN catchType {BTOR catchType} identifier RPAREN
+
+     * </pre>
+     *
+     * @return an AST for a Statement.
+     */
+    private JCatchFormalParameter catchFormalParameter() {
+        int line = scanner.token().line();
+        mustBe(LPAREN);
+
+        ArrayList<TypeName> catchTypes = new ArrayList<TypeName>();
+        do
+            catchTypes.add(qualifiedIdentifier());
+        while (have(BTOR));
+
+        mustBe(IDENTIFIER);
+        String name = scanner.previousToken().image();
+
+        mustBe(RPAREN);
+
+        return new JCatchFormalParameter(line, catchTypes, name);
+    }
+    
+
+    private JTryStatement tryStatement() {
+        int line = scanner.token().line();
+        JBlock tryblock= block();
+        //try-finally
+        ArrayList<JCatchClause> catchClauses = new ArrayList<>();
+        JBlock finallyblock = null;
+        //at least have one catch
+        // mustBe(CATCH);
+        //     catchClauses.add(new JCatchClause(line, catchFormalParameter(), block()));
+        // while (have(CATCH))
+        //     catchClauses.add(new JCatchClause(line, catchFormalParameter(), block()));
+        // if (have(FINALLY)){
+        //     finallyblock = block();
+        if(have(CATCH)){
+            catchClauses.add(new JCatchClause(line, catchFormalParameter(), block()));
+            while (have(CATCH))
+                catchClauses.add(new JCatchClause(line, catchFormalParameter(), block()));
+            if (have(FINALLY)){
+            finallyblock = block();
+            }        
+        }else{
+            mustBe(FINALLY);
+            finallyblock = block();
+                
+        }
+            
+
+        return new JTryStatement(line, tryblock, catchClauses, finallyblock);
+    }
+
 
     /**
      * Parse formal parameters.
@@ -1102,7 +1210,9 @@ public class Parser {
             return Type.BOOLEAN;
         } else if (have(CHAR)) {
             return Type.CHAR;
-        } else if (have(INT)) {
+        } else if (have(DOUBLE)){
+            return Type.DOUBLE;
+        }else if (have(INT)) {
             return Type.INT;
         } else {
             reportParserError("Type sought where %s found", scanner.token()
@@ -1155,6 +1265,8 @@ public class Parser {
         int line = scanner.token().line();
         JExpression expr = expression();
         if (expr instanceof JAssignment || expr instanceof JPreIncrementOp
+                                        || expr instanceof JPreDecrementOp
+                                        || expr instanceof JPostIncrementOp
                                         || expr instanceof JPostDecrementOp
                                         || expr instanceof JMessageExpression
                                         || expr instanceof JSuperConstruction
@@ -1198,18 +1310,76 @@ public class Parser {
      * 
      * @return an AST for an assignmentExpression.
      */
-
+    //XingGuang Geng assignment 
     private JExpression assignmentExpression() {
         int line = scanner.token().line();
-        JExpression lhs = conditionalAndExpression();
+        JExpression lhs = conditionalOrExpression();
         if (have(ASSIGN)) {
             return new JAssignOp(line, lhs, assignmentExpression());
-        } else if (have(PLUS_ASSIGN)) {
+        }else if(have(STAR_ASSIGN)){
+            return new JMultiAssignOp(line,lhs,assignmentExpression());
+        } else if(have(MINUS_ASSIGN)){
+            return new JMinusAssignOp(line,lhs,assignmentExpression());
+        } else if(have(REM_ASSIGN)){
+            return new JRemAssignOp(line,lhs,assignmentExpression());
+        }else if(have(DIV_ASSIGN)){
+            return new JDivAssignOp(line,lhs,assignmentExpression());
+        }
+        else if (have(PLUS_ASSIGN)) {
             return new JPlusAssignOp(line, lhs, assignmentExpression());
         } else {
             return lhs;
         }
     }
+
+    /** 
+     * Parse a conditionalExpression.
+     * 
+     * // level 12 step3
+        conditionalExpression ::= conditionalOrExpression
+        [ QUESTION assignmentExpression : conditionalExpression]
+     *  **
+
+    private JExpression conditionalExpression(){
+        int line = scanner.token().line();
+        JExpression lhs = conditionalOrExpression();
+        JExpression assign = null;
+        JExpression condition = null;
+        if (have(QUESTION)) {
+            assign = assignmentExpression();
+            mustBe(COLON);
+            condition=conditionalExpression();
+            return new JConditionalExpression(line, lhs, condition, assign);
+        } else {
+            return lhs;
+        }
+    }
+
+     /**
+      * Parse a conditional-or expression
+      *
+      * <pre>
+      * conditionalOrExpression ::= conditionalAndExpression 
+      *                    { LOR conditionalAndExpression}
+      * </pre>
+      *
+      * @return as AST for a conditionalExpression.
+      */
+
+    private JExpression conditionalOrExpression(){
+        int line = scanner.token().line();
+        boolean more = true;
+        JExpression lhs = conditionalAndExpression();
+        while (more) {
+            if (have(LOR)) {
+                lhs = new JLogicalOrOp(line, lhs, conditionalAndExpression());
+            } else {
+                more = false;
+            }
+        }
+        return lhs;
+    }
+
 
     /**
      * Parse a conditional-and expression.
@@ -1242,7 +1412,7 @@ public class Parser {
      * 
      * <pre>
      *  bitwiseOrExpression  ::= bitXorExpression       // level 9
-     *                               {BITWISE_OR bitXorExpression}
+     *                               {BTOR bitXorExpression}
      * </pre>
      * 
      * @return an AST for an bitwiseOrExpression.
@@ -1253,7 +1423,7 @@ public class Parser {
         boolean more = true;
         JExpression lhs = bitXorExpression();
         while (more) {
-            if (have(BITWISE_OR)) {
+            if (have(BTOR)) {
                 lhs = new JBitwiseOrOp(line, lhs, bitXorExpression());
             } else {
                 more = false;
@@ -1445,7 +1615,7 @@ public class Parser {
                 lhs = new JDivideOp(line, lhs, unaryExpression());
             }
             else if (have(REM)) {
-                lhs = new JRemainOp(line, lhs, unaryExpression());
+                lhs = new JRemainderOp(line, lhs, unaryExpression());
             } 
             else {
                 more = false;
@@ -1471,6 +1641,8 @@ public class Parser {
         int line = scanner.token().line();
         if (have(INC)) {
             return new JPreIncrementOp(line, unaryExpression());
+        } else if (have(DEC)) {
+            return new JPreDecrementOp(line, unaryExpression());
         } else if (have(MINUS)) {
             return new JNegateOp(line, unaryExpression());
         } else if (have(PLUS)) {
@@ -1535,6 +1707,9 @@ public class Parser {
         }
         while (have(DEC)) {
             primaryExpr = new JPostDecrementOp(line, primaryExpr);
+        }
+        while (have(INC)) {
+            primaryExpr = new JPostIncrementOp(line, primaryExpr);
         }
         return primaryExpr;
     }
@@ -1726,7 +1901,9 @@ public class Parser {
         int line = scanner.token().line();
         if (have(INT_LITERAL)) {
             return new JLiteralInt(line, scanner.previousToken().image());
-        } else if (have(CHAR_LITERAL)) {
+        } else if(have(DOUBLE_LITERAL)){
+            return new JLiteralDouble(line, scanner.previousToken().image());
+        }else if (have(CHAR_LITERAL)) {
             return new JLiteralChar(line, scanner.previousToken().image());
         } else if (have(STRING_LITERAL)) {
             return new JLiteralString(line, scanner.previousToken().image());

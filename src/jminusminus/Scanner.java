@@ -277,16 +277,16 @@ class Scanner {
             return new TokenInfo(QUESTION,line);
         case '|':
             nextCh();
-            if (ch == '=') {
+            if (ch == '|') {
                 nextCh();
-                return new TokenInfo(BITWISE_OR_ASSIGN, line);
+                return new TokenInfo(LOR, line);
             }
-            else if (ch == '|') {
+            else if (ch == '=') {
                 nextCh();
-                return new TokenInfo(LOGICAL_OR, line);
+                return new TokenInfo(BTOR_ASSIGN, line);
             }
             else{
-                return new TokenInfo(BITWISE_OR, line);
+                return new TokenInfo(BTOR, line);
             }
         case '~':
             nextCh();
@@ -343,10 +343,10 @@ class Scanner {
             nextCh();
             if (ch == '=') {
                 nextCh();
-                return new TokenInfo(BITWISE_OR_ASSIGN, line);
+                return new TokenInfo(BTOR_ASSIGN, line);
             }
             else {
-                return new TokenInfo(BITWISE_OR, line);
+                return new TokenInfo(BTOR, line);
             }
         case '\'':
             buffer = new StringBuffer();
@@ -396,15 +396,66 @@ class Scanner {
                 buffer.append("\"");
             }
             return new TokenInfo(STRING_LITERAL, buffer.toString(), line);
-        case '.':
+            case '.':
             nextCh();
-            return new TokenInfo(DOT, line);
+            if (!isDigit(ch)) {
+                return new TokenInfo(DOT, line);
+            }
+            else
+            {
+                buffer = new StringBuffer();
+                buffer.append("0");
+                buffer.append(".");
+                while(isDigit(ch))
+                {
+                    buffer.append(ch);
+                    nextCh();
+                }
+                if (ch == 'e'|| ch == 'E'){
+                    buffer.append(ch);
+                    nextCh();
+                }
+                if (ch == '+'|| ch == '-'){
+                    buffer.append(ch);
+                    nextCh();
+                    if(!isDigit(ch)){
+                        reportScannerError("the exponent must followed by at least one digit", ch);
+                    }
+
+                }
+                while(isDigit(ch)){
+                    buffer.append(ch);
+                    nextCh();
+
+                }
+                if (ch == 'd'|| ch == 'D'){
+                    buffer.append(ch);
+                    nextCh();
+                }
+
+               
+                return new TokenInfo(DOUBLE_LITERAL, buffer.toString(), line);
+            }
         case EOFCH:
             return new TokenInfo(EOF, line);
-        case '0':
+            case '0':
             // Handle only simple decimal integers for now.
             nextCh();
-            return new TokenInfo(INT_LITERAL, "0", line);
+            buffer = new StringBuffer();
+            if (ch == '.') {
+                buffer.append("0.");
+                nextCh();
+                while (isDigit(ch)) {
+                    buffer.append(ch);
+                    nextCh();
+                }
+
+                return new TokenInfo(DOUBLE_LITERAL, buffer.toString(), line);
+            }
+            else {
+                buffer.append("0");
+                return new TokenInfo(INT_LITERAL, "0", line);
+                }
         case '1':
         case '2':
         case '3':
@@ -414,12 +465,75 @@ class Scanner {
         case '7':
         case '8':
         case '9':
+            
             buffer = new StringBuffer();
             while (isDigit(ch)) {
                 buffer.append(ch);
                 nextCh();
             }
-            return new TokenInfo(INT_LITERAL, buffer.toString(), line);
+            if (ch == '.') {
+                
+                buffer.append(ch);
+                nextCh();
+                while(isDigit(ch))
+                {
+                    buffer.append(ch);
+                    nextCh();
+                }
+                if (ch == 'e'|| ch == 'E'){
+                    buffer.append(ch);
+                    nextCh();
+                }
+                if (ch == '+'|| ch == '-'){
+                    buffer.append(ch);
+                    nextCh();
+                    if(!isDigit(ch)){
+                        reportScannerError("the exponent must followed by at least one digit", ch);
+                    }
+
+                }
+                while(isDigit(ch)){
+                    buffer.append(ch);
+                    nextCh();
+
+                }
+                if (ch == 'd'|| ch == 'D'){
+                    buffer.append(ch);
+                    nextCh();
+                }
+
+                
+                return new TokenInfo(DOUBLE_LITERAL, buffer.toString(), line);
+            }
+            else if( ch == 'e' || ch == 'E' ){
+                buffer.append(ch);
+                nextCh();
+                if (ch == '+'|| ch == '-'){
+                    buffer.append(ch);
+                    nextCh();
+                    if(!isDigit(ch)){
+                        reportScannerError("the exponent must followed by at least one digit", ch);
+                    }
+
+                }
+                while(isDigit(ch)){
+                    buffer.append(ch);
+                    nextCh();
+
+                }
+                if (ch == 'd'|| ch == 'D'){
+                    buffer.append(ch);
+                    nextCh();
+                }
+                return new TokenInfo(DOUBLE_LITERAL, buffer.toString(), line);
+            }
+            else if(ch == 'd'|| ch == 'D'){
+                buffer.append(ch);
+                nextCh();
+                return new TokenInfo(DOUBLE_LITERAL, buffer.toString(), line);
+            }
+
+            else {return new TokenInfo(INT_LITERAL, buffer.toString(), line);}
         default:
             if (isIdentifierStart(ch)) {
                 buffer = new StringBuffer();

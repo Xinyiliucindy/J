@@ -18,6 +18,7 @@ classDeclaration ::= CLASS IDENTIFIER [EXTENDS qualifiedIdentifier]             
 classBody ::= LCURLY { SEMI | STATIC block
                       | block | modifiers memberDecl} RCURLY
 
+<<<<<<< HEAD
 interfaceDeclaration ::= INTERFACE IDENTIFIER  // can't be final                                        // step 2              
                          [EXTENDS qualifiedIdentifier {COMMA qualifiedIdentifier}]
                          interfaceBody 
@@ -36,9 +37,14 @@ memberDecl ::= classDeclaration       // inner class
              | interfaceDeclaration   // inner interface
               |  IDENTIFIER            // constructor
                  formalParameters block
+=======
+memberDecl ::= IDENTIFIER            // constructor
+                 formalParameters 
+                    [ THROWS qualifiedIdentifier { COMMA qualifiedIdentifier } ]
+>>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
              | (VOID | type) IDENTIFIER  // method
                  formalParameters
-                 (block | SEMI)
+                    [ THROWS qualifiedIdentifier { COMMA qualifiedIdentifier } ] ( block | SEMI )(block | SEMI)
              | type variableDeclarators SEMI // field
 
 block ::= LCURLY {blockStatement} RCURLY 
@@ -48,10 +54,18 @@ blockStatement ::= localVariableDeclarationStatement
 
 statement ::= block
             | IF parExpression statement [ELSE statement]
+            | FOR LPAREN [forInit] SEMI [expression] SEMI [forUpdate] RPAREN statement // step 3
             | WHILE parExpression statement 
             | RETURN [expression] SEMI
             | SEMI 
+            | tryStatement             //step 2 Try
+            | THROW expression SEMI              //step 2 Throw
             | statementExpression SEMI
+
+//step 2 Try
+tryStatement ::= TYR Block catchClause {catchClause} [FINALLY Block] | FINALLY Block
+catchClause ::= CATCH catchFormalParameter Block
+catchFormalParameter ::= LPAREN catchType {BTOR catchType} identifier RPAREN
 
 formalParameters ::= LPAREN 
                        [formalParameter {COMMA formalParameter}]
@@ -60,6 +74,10 @@ formalParameters ::= LPAREN
 formalParameter ::= type IDENTIFIER
 
 parExpression ::= LPAREN expression RPAREN
+
+forInit ::= statementExpression {COMMA statementExpression} | [final] type variableDeclarators // step 3  : for 
+
+forUpdate ::= statementExpression {COMMA statementExpression} // step 3  : for 
 
 localVariableDeclarationStatement ::= type variableDeclarators SEMI
 
@@ -94,15 +112,15 @@ assignmentExpression ::= conditionalExpression  // must be a valid lhs
                            [(ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN                            
                             | STAR_ASSIGN | DIV_ASSIGN | REM_ASSIGN                       
                             | SSL_ASSIGN | SSR_ASSIGN | USR_ASSIGN
-                            | AND_ASSIGN | BITXOR_ASSIGN | BITWISE_OR_ASSIGN) assignmentExpression]
+                            | AND_ASSIGN | BITXOR_ASSIGN | BTOR_ASSIGN) assignmentExpression]
 
 // level 12
 conditionalExpression ::= conditionalOrExpression
-                          [ QUESTION assignmentExpression : conditionalExpression]
+                          [ QUESTION assignmentExpression COLON conditionalExpression]
 
 //level 11
 conditionalOrExpression ::= conditionalAndExpression 
-                          { LOGICAL_OR conditionalAndExpression}
+                          { LOR conditionalAndExpression}
 
 // level 10
 conditionalAndExpression ::= bitwiseOrExpression
@@ -111,7 +129,7 @@ conditionalAndExpression ::= bitwiseOrExpression
 // level 9
 // gengxingguang: added level 9
 bitwiseOrExpression  ::= bitXorExpression
-                            { BITWISE_OR bitXorExpression}
+                            { BTOR bitXorExpression}
 
 // level 8
 // yaoyao: added level 8
@@ -160,7 +178,7 @@ simpleUnaryExpression ::= LNOT unaryExpression
                           RPAREN simpleUnaryExpression
                         | postfixExpression 
 
-postfixExpression ::= primary {selector} {DEC}
+postfixExpression ::= primary {selector} {DEC|INC}
 
 selector ::= DOT qualifiedIdentifier [arguments]
            | LBRACK expression RBRACK

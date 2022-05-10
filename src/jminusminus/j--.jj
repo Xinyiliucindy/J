@@ -141,6 +141,10 @@ SKIP: {" "|"\t"|"\n"|"\r"|"\f"}
 // Single line comment -- ignored
 SKIP: {<SINGLE_LINE_COMMENT: "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>}
 
+// Multi line comment -- ignored
+SKIP: {<MULTI_LINE_COMMENT: "/*" (~["\n","\r"]|["\n","\r"])* "*/">}
+
+
 // Reserved words
 TOKEN: {
   <ABSTRACT: "abstract">
@@ -189,6 +193,10 @@ TOKEN: {
 | <THROW: "throw"> //step 3
 | <THROWS: "throws"> //step 3
 | <TRANSIENT: "transient"> //step 3
+<<<<<<< HEAD
+=======
+
+>>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
 | <TRY: "try"> //step 3
 | <TRUE: "true">
 | <VOID: "void">
@@ -200,7 +208,10 @@ TOKEN: {
 TOKEN: {
   <PLUS: "+">
 | <ASSIGN: "=">
+<<<<<<< HEAD
 
+=======
+>>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
 | <EQUAL: "==">
 | <GT: ">">
 | <GT_EQUAL: ">="> //step 3
@@ -216,7 +227,11 @@ TOKEN: {
 | <NOT_EQUAL: "!="> //step 3
 | <MINUS: "-">
 | <MINUS_ASSIGN: "-="> //step 3
+<<<<<<< HEAD
 | <DEC: "!-"> //step 3
+=======
+| <DEC: "--"> //step 3
+>>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
 | <PLUS_ASSIGN: "+=">
 | <STAR: "*">
 | <STAR_ASSIGN: "*="> //step 3
@@ -231,9 +246,15 @@ TOKEN: {
 | <USRIGHT: ">>>"> //step 3
 | <USR_ASSIGN: ">>>="> //step 3
 | <COMPLEMENT: "~"> //step 3
+<<<<<<< HEAD
 | <BITWISE_OR: "|"> //step 3
 | <BITWISE_OR_ASSIGN: "|="> //step 3
 | <LOGICAL_OR: "||"> //step 3
+=======
+| <BTOR: "|"> //step 3
+| <BTOR_ASSIGN: "|="> //step 3
+| <LOR: "||"> //step 3
+>>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
 | <QUESTION: "?"> //step 3
 }
 
@@ -269,6 +290,10 @@ TOKEN: {
 | <CHAR_LITERAL: "'" (<ESC> | ~["'","\\","\n","\r"]) "'" >
 | <STRING_LITERAL: "\"" (<ESC> | ~["\"","\\","\n","\r"])* "\"" >
 | <#ESC: "\\" ["n","t","b","r","f","\\","'","\""] >
+<<<<<<< HEAD
+=======
+| <DOUBLE_LITERAL: ((<DIGIT>)*) "." (<DIGIT> (<DIGIT>)*)>
+>>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
 
 }
 
@@ -670,6 +695,7 @@ private ArrayList<JMember> interfaceBody(): {
 }
 
 
+<<<<<<< HEAD
 /**
 * Parse an interfacemember declaration.
 * 
@@ -754,6 +780,9 @@ private JMember interfaceMemberDecl(ArrayList<String> mods): {
 
 
 
+=======
+//step 3 Throws
+>>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
 /**
  * Parse a member declaration.
  * 
@@ -782,9 +811,14 @@ private JMember memberDecl(ArrayList<String> mods): {
     JBlock body = null;
     ArrayList<JVariableDeclarator> variableDeclarators = null;
     JMember memberDecl = null;
+<<<<<<< HEAD
     JAST classDeclaration = null;
     JAST interfaceDeclaration = null; 
     ArrayList<TypeName> exceptions = new ArrayList<TypeName>();
+=======
+    Type exception = null;
+    ArrayList<Type> exceptionClauses = new ArrayList<Type>();
+>>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
 }
 {
     try {
@@ -803,6 +837,7 @@ private JMember memberDecl(ArrayList<String> mods): {
                 name = token.image;
             }
             params = formalParameters()
+<<<<<<< HEAD
             [
                 LOOKAHEAD(<THROWS>)
                 <THROWS>
@@ -810,12 +845,27 @@ private JMember memberDecl(ArrayList<String> mods): {
                 (
                     <COMMA>
                     {exceptions.add(qualifiedIdentifier()); }
+=======
+             [
+            LOOKAHEAD(<THROWS>)
+                <THROWS> 
+                exception = qualifiedIdentifier()
+                { exceptionClauses.add(exception); }
+                (
+                    <COMMA>
+                    exception = qualifiedIdentifier()
+                    { exceptionClauses.add(exception); }
+>>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
                 )*
             ]
             body = block()
             {
                 memberDecl = new JConstructorDeclaration(line, mods,
+<<<<<<< HEAD
                                                          name, params, exceptions, body);
+=======
+                                                         name, params, null, body);
+>>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
             }
         ) |
         LOOKAHEAD((<VOID> | type()) <IDENTIFIER> <LPAREN>)
@@ -829,6 +879,7 @@ private JMember memberDecl(ArrayList<String> mods): {
             params = formalParameters() 
             [
                 LOOKAHEAD(<THROWS>)
+<<<<<<< HEAD
                 <THROWS>
                 { exceptions.add(qualifiedIdentifier());}
                 (
@@ -836,13 +887,28 @@ private JMember memberDecl(ArrayList<String> mods): {
                     {exceptions.add(qualifiedIdentifier()); }
                 )*
             ]
+=======
+                <THROWS> exception = qualifiedIdentifier()
+                { exceptionClauses.add(exception); }
+                (
+                    <COMMA>
+                    exception = qualifiedIdentifier()
+                    { exceptionClauses.add(exception); }
+                )*
+            ]
+
+>>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
             (
                 body = block() |
                 <SEMI>
             )
             {
                 memberDecl = new JMethodDeclaration(line, mods, name,
+<<<<<<< HEAD
                                                     type, params, exceptions, body);
+=======
+                                                    type, params, exceptionClauses, body);
+>>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
             }
         ) |
         (
@@ -940,11 +1006,23 @@ private JStatement statement(): {
     JStatement alternate  = null;
     JStatement body       = null;
     JExpression expr      = null;
+    //step 3 throw
+    JExpression throwExpression = null;
 }
 {
     try {
         statement = block() |
-        
+              
+
+        //step 3 try
+        statement = tryStatement() |
+
+        //step 3 throw
+        <THROW> { line = token.beginLine;}
+        throwExpression = expression()
+        <SEMI>
+        {statement = new JThrowStatement(line, throwExpression);} |
+
         <IF> { line = token.beginLine; }
         test = parExpression()
         consequent = statement()
@@ -983,6 +1061,91 @@ private JStatement statement(): {
         recoverFromError(new int[] { SEMI, EOF }, e);
     }
     { return statement; }
+}
+
+/**
+ * Parse try statement. step 3 try
+ *
+ * <pre>
+ *       tryStatement ::= TYR Block catchClause {catchClause} [FINALLY Block]
+ * </pre>
+ *
+ * @return an AST for a tryStatement.
+ */
+
+ private JTryStatement tryStatement(): {
+    int line = 0;
+    JBlock tryblock = null;
+    ArrayList<JCatchClause> catchClauses = new ArrayList();
+    JCatchClause aCatchClause = null;
+    JBlock finallyblock = null;
+}
+{
+    try {
+        <TRY> { line = token.beginLine; }
+        tryblock = block()
+        (
+            LOOKAHEAD (<CATCH>)
+            aCatchClause = catchClause()
+            { catchClauses.add(aCatchClause); }
+            (
+                aCatchClause = catchClause()
+                { catchClauses.add(aCatchClause); }
+            )*
+            [<FINALLY> finallyblock= block()]
+        |
+            LOOKAHEAD(<FINALLY>)
+            <FINALLY> finallyblock= block()
+        )
+    }
+    catch (ParseException e) {
+        recoverFromError(new int[] { SEMI, EOF }, e);
+    }
+    { return new JTryStatement(line, tryblock, catchClauses, finallyblock); }
+}
+
+
+private JCatchClause catchClause(): {
+    int line = 0;
+    JCatchFormalParameter formalParameter = null;
+    JBlock catchblock = null;
+}
+{
+    try {
+        <CATCH> { line = token.beginLine; }
+        formalParameter = catchFormalParameter()
+        catchblock = block()
+    }
+    catch (ParseException e) {
+        recoverFromError(new int[] { SEMI, EOF }, e);
+    }
+    { return new JCatchClause(line, formalParameter, catchblock); }
+}
+
+
+private JCatchFormalParameter catchFormalParameter(): {
+    int line = 0;
+    ArrayList<TypeName> catchTypes = new ArrayList();
+    String name = "";
+    TypeName aType = null;
+}
+{
+    try {
+        <LPAREN> { line = token.beginLine; } aType = qualifiedIdentifier()
+        { catchTypes.add(aType); }
+
+        (
+            <BTOR> aType = qualifiedIdentifier()
+            { catchTypes.add(aType); }
+        )*
+
+        <IDENTIFIER> { name = token.image; }
+        <RPAREN>
+    }
+    catch (ParseException e) {
+        recoverFromError(new int[] { SEMI, EOF }, e);
+    }
+    { return new JCatchFormalParameter(line, catchTypes, name); }
 }
 
 /**
@@ -1306,6 +1469,7 @@ private Type basicType(): {
     try {
         <BOOLEAN> { type = Type.BOOLEAN; } |
         <CHAR> { type = Type.CHAR; } |
+        <DOUBLE> { type = Type.DOUBLE; } |
         <INT> { type = Type.INT; }
     }
     catch (ParseException e) {
@@ -1370,6 +1534,8 @@ private JStatement statementExpression(): {
             line = expr.line();
             if (expr instanceof JAssignment
              || expr instanceof JPreIncrementOp
+             || expr instanceof JPreDecrementOp
+             || expr instanceof JPostIncrementOp
              || expr instanceof JPostDecrementOp
              || expr instanceof JMessageExpression
              || expr instanceof JSuperConstruction
@@ -1420,7 +1586,7 @@ private JExpression expression(): {
  *   assignmentExpression ::= 
  *       conditionalAndExpression                // level 13
  *           [( ASSIGN       // must be valid lhs
- *            | PLUS_ASSIGN 
+ *            | PLUS_ASSIGN |STAR_ASSIGN|DIV_ASSIGN|MINUS_ASSIGN|REM_ASSIGN
  *            )
  *            assignmentExpression]
  * </pre>
@@ -1434,16 +1600,63 @@ private JExpression assignmentExpression(): {
 }
 {
     try {
-        lhs = conditionalAndExpression() { line = lhs.line(); }
+        lhs = conditionalOrExpression() { line = lhs.line(); }
         [
             <ASSIGN>
             rhs = assignmentExpression()
             { lhs = new JAssignOp(line, lhs, rhs); } |
+
+            <STAR_ASSIGN>
+            rhs = assignmentExpression()
+            { lhs = new JMultiAssignOp(line, lhs, rhs); } |
+
+            <DIV_ASSIGN>
+            rhs = assignmentExpression()
+            { lhs = new JDivAssignOp(line, lhs, rhs); } |
             
+            <MINUS_ASSIGN>
+            rhs = assignmentExpression()
+            { lhs = new JMinusAssignOp(line, lhs, rhs); } |
+
+            <REM_ASSIGN>
+            rhs = assignmentExpression()
+            { lhs = new JRemAssignOp(line, lhs, rhs); } |
+
             <PLUS_ASSIGN>
             rhs = assignmentExpression()
             { lhs = new JPlusAssignOp(line, lhs, rhs); }
         ]
+    }
+    catch (ParseException e) {
+        recoverFromError(new int[] { SEMI, EOF }, e);
+    }
+    { return lhs; }
+}
+
+/**
+ * Parse a conditional-or expression.
+ *
+ * <pre>
+ *   conditionalOrExpression ::= conditionalAndExpression
+ *                       {LOR conditionalAndExpression}
+ * </pre>
+ *
+ * @return an AST for a conditionalExpression.
+ */
+
+
+private JExpression conditionalOrExpression():{
+    int line = 0;
+    JExpression lhs = null, rhs = null;
+}
+{
+    try {
+        lhs = conditionalAndExpression() { line = lhs.line(); }
+        (
+            <LOR>
+            rhs = conditionalAndExpression()
+            { lhs = new JLogicalOrOp(line, lhs, rhs); }
+        )*
     }
     catch (ParseException e) {
         recoverFromError(new int[] { SEMI, EOF }, e);
@@ -1468,11 +1681,68 @@ private JExpression conditionalAndExpression(): {
 }
 {
     try {
-        lhs = equalityExpression() { line = lhs.line(); }
+        lhs = bitwiseOrExpression() { line = lhs.line(); }
         (
             <LAND>
-            rhs = equalityExpression()
+            rhs = bitwiseOrExpression()
             { lhs = new JLogicalAndOp(line, lhs, rhs); }
+        )*
+    }
+    catch (ParseException e) {
+        recoverFromError(new int[] { SEMI, EOF }, e);
+    }
+    { return lhs; }
+}
+
+private JExpression bitwiseOrExpression(): {
+    int line = 0;
+    JExpression lhs = null, rhs = null;
+}
+{
+    try {
+        lhs = bitXorExpression() { line = lhs.line(); }
+        (
+            <BTOR>
+            rhs = bitXorExpression()
+            { lhs = new JBitwiseOrOp(line, lhs, rhs); }
+        )*
+    }
+    catch (ParseException e) {
+        recoverFromError(new int[] { SEMI, EOF }, e);
+    }
+    { return lhs; }
+}
+
+private JExpression bitXorExpression(): {
+    int line = 0;
+    JExpression lhs = null, rhs = null;
+}
+{
+    try {
+        lhs = bitAndExpression() { line = lhs.line(); }
+        (
+            <BITXOR>
+            rhs = bitAndExpression()
+            { lhs = new JBitXorOp(line, lhs, rhs); }
+        )*
+    }
+    catch (ParseException e) {
+        recoverFromError(new int[] { SEMI, EOF }, e);
+    }
+    { return lhs; }
+}
+
+private JExpression bitAndExpression(): {
+    int line = 0;
+    JExpression lhs = null, rhs = null;
+}
+{
+    try {
+        lhs = equalityExpression() { line = lhs.line(); }
+        (
+            <AND>
+            rhs = equalityExpression()
+            { lhs = new JBitAndOp(line, lhs, rhs); }
         )*
     }
     catch (ParseException e) {
@@ -1604,9 +1874,15 @@ private JExpression multiplicativeExpression(): {
     try {
         lhs = unaryExpression() { line = lhs.line(); }
         (
-            <STAR>
+            <STAR> 
             rhs = unaryExpression()
-            { lhs = new JMultiplyOp(line, lhs, rhs); }
+            { lhs = new JMultiplyOp( line, lhs, rhs ); } |
+			<DIV>
+			rhs = unaryExpression()
+			{ lhs = new JDivideOp( line, lhs, rhs ); } |
+			<REM>
+			rhs = unaryExpression()
+			{ lhs = new JRemainderOp( line, lhs, rhs ); }
         )*
     }
     catch (ParseException e) {
@@ -1636,6 +1912,10 @@ private JExpression unaryExpression(): {
         <INC> { line = token.beginLine; }
         unaryExpr = unaryExpression()
         { expr = new JPreIncrementOp(line, unaryExpr); } |
+
+        <DEC> { line = token.beginLine; }
+        unaryExpr = unaryExpression()
+        { expr = new JPreDecrementOp(line, unaryExpr); } |
 
         <MINUS> { line = token.beginLine; }
         unaryExpr = unaryExpression()
@@ -1719,6 +1999,9 @@ private JExpression postfixExpression(): {
             primaryExpr = selector(primaryExpr)
         )*
         (
+            <INC>
+	        { primaryExpr = new JPostIncrementOp(line, primaryExpr); } |
+            
             <DEC>
             { primaryExpr = new JPostDecrementOp(line, primaryExpr); }
         )*
@@ -1970,6 +2253,9 @@ private JExpression literal(): {
     try {
         <INT_LITERAL>
         { expr = new JLiteralInt(token.beginLine, token.image); } |
+
+        <DOUBLE_LITERAL>
+        { expr = new JLiteralDouble(token.beginLine, token.image); } |
 
         <CHAR_LITERAL>
         { expr = new JLiteralChar(token.beginLine, token.image); } |
