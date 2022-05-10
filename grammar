@@ -32,7 +32,6 @@ blockStatement ::= localVariableDeclarationStatement
 
 statement ::= block
             | IF parExpression statement [ELSE statement]
-            | WHILE parExpression statement
             | FOR LPAREN [forInit] SEMI [expression] SEMI [forUpdate] RPAREN statement // step 3
             | WHILE parExpression statement 
             | RETURN [expression] SEMI
