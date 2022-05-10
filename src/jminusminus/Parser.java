@@ -888,7 +888,51 @@ public class Parser {
             JStatement consequent = statement();
             JStatement alternate = have(ELSE) ? statement() : null;
             return new JIfStatement(line, test, consequent, alternate);
-        } else if (have(WHILE)) {
+        }else if (have(FOR)){//step2
+            ArrayList<JStatement> initfor = new ArrayList<JStatement>();
+            ArrayList<JStatement> updatefor = new ArrayList<JStatement>();
+            JExpression expr = null;
+            Type type = null;
+            mustBe(LPAREN);
+            scanner.recordPosition();
+            scanner.next();
+            scanner.next();
+            if(!have(COLON)){
+            System.out.print("basic");
+            scanner.returnToPosition();
+            if(!see(SEMI))
+            {
+                initfor = forInit();
+            }
+            mustBe(SEMI);
+            if(!see(SEMI))
+            {
+                expr = expression();
+            }
+            mustBe(SEMI);
+            if(!see(RPAREN))
+            {
+                updatefor = forUpdate();
+            }
+            mustBe(RPAREN);
+            JStatement statement = statement();
+            return new JForStatement(line,initfor,expr,updatefor,statement,"basic");
+            }
+            else{
+            System.out.print("enhanced");
+            //for(int i : item)
+            //FOR LPAREN colonLocalVariableDeclarationStatement expression RPAREN statement
+            //FOR LPAREN type variableDeclarators COLON expression RPAREN statement
+            scanner.returnToPosition();
+            JFormalParameter param = formalParameter();
+            mustBe(COLON);
+            expr = expression();
+            mustBe(RPAREN);
+            JStatement statement = statement();
+            return new JForStatement(line,param,expr,statement,"enhanced");
+            }
+        } 
+        else if (have(WHILE)) {
             JExpression test = parExpression();
             JStatement statement = statement();
             return new JWhileStatement(line, test, statement);
@@ -919,6 +963,54 @@ public class Parser {
             return statement;
         }
     }
+    /**
+     * forInit
+     * forInit ::= statementExpression {COMMA statementExpression} | [final] type variableDeclarators
+     * @return
+     * ArrayList<JVariableDeclarator> vdecls = variableDeclarators(type());
+     */
+    private ArrayList<JStatement> forInit() {
+        ArrayList<JStatement> teststatements = new ArrayList<JStatement>();
+        ArrayList<String> mods = new ArrayList<String>();
+        if(have(COMMA))
+        {
+            do{
+                teststatements.add(statementExpression());
+            }while(have(COMMA));
+            return teststatements;
+        }
+        else{ 
+            if (have(FINAL)) {
+                mods.add("final");
+            }
+            int line = scanner.token().line();
+            ArrayList<JVariableDeclarator> vdecls = variableDeclarators(type());
+            JStatement jVari = new JVariableDeclaration(line,mods,vdecls);
+            teststatements.add(jVari);
+            //return new JVariableDeclaration(line, mods, vdecls);
+            return teststatements;
+        }
+
+
+
+
+    }
+
+    /**
+     * forUpdate
+     * forUpdate ::= statementExpression {COMMA statementExpression}
+     * @return
+    */
+    private ArrayList<JStatement> forUpdate() {
+        //int line = scanner.token().line();
+        ArrayList<JStatement> test =new ArrayList<JStatement>();
+        do {
+            test.add(statementExpression());
+        } while (have(COMMA));
+        return test;
+    }
+
+
     /**
      * Parse tryStatement. step 2 try
      *
@@ -1313,7 +1405,7 @@ public class Parser {
     //XingGuang Geng assignment 
     private JExpression assignmentExpression() {
         int line = scanner.token().line();
-        JExpression lhs = conditionalOrExpression();
+        JExpression lhs = conditionalExpression();
         if (have(ASSIGN)) {
             return new JAssignOp(line, lhs, assignmentExpression());
         }else if(have(STAR_ASSIGN)){
@@ -1338,7 +1430,15 @@ public class Parser {
      * // level 12 step3
         conditionalExpression ::= conditionalOrExpression
         [ QUESTION assignmentExpression : conditionalExpression]
-     *  **
+     *  **/
+
+    /** 
+     * Parse a conditionalExpression.
+     * 
+     * // level 12 step2
+        conditionalExpression ::= conditionalOrExpression
+        [ QUESTION assignmentExpression : conditionalExpression]
+     *  **/
 
     private JExpression conditionalExpression(){
         int line = scanner.token().line();

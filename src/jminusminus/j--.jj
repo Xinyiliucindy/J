@@ -1008,6 +1008,13 @@ private JStatement statement(): {
     JExpression expr      = null;
     //step 3 throw
     JExpression throwExpression = null;
+    //for
+    ArrayList<JStatement> initfor  = null; 
+    ArrayList<JStatement> updatefor = null; 
+    ArrayList<String> mods = new ArrayList<String>();
+    Type type = null;
+    ArrayList<JVariableDeclarator> vdecls =null;//zhidie
+    JFormalParameter init = null;
 }
 {
     try {
@@ -1036,7 +1043,26 @@ private JStatement statement(): {
             <ELSE> alternate = statement()
         ]
         { statement = new JIfStatement(line, test, consequent, alternate); } |
-
+        LOOKAHEAD(<FOR> <LPAREN> [forInit()] <SEMI>)
+        <FOR> {line = token.beginLine; } 
+        <LPAREN>
+        [ initfor = forInit()]
+        <SEMI>
+        [ expr = expression()]
+        <SEMI>
+        [ updatefor = forUpdate()]
+        <RPAREN>
+        body = statement()
+        { statement = new JForStatement(line,initfor,expr,updatefor,body,"basic"); } |
+        LOOKAHEAD(<FOR> <LPAREN> (basicType() | referenceType()) <IDENTIFIER> <COLON>)
+        <FOR> { line = token.beginLine; }                   
+        <LPAREN>                                           
+        init = formalParameter()
+        <COLON>
+        expr = relationalExpression()                     
+        <RPAREN>                                            
+        body = statement()                            
+        { statement = new JForStatement(line, init,expr,body,"enhanced"); } |
         <WHILE> { line = token.beginLine; }
         test = parExpression()
         body = statement()
@@ -1062,6 +1088,78 @@ private JStatement statement(): {
     }
     { return statement; }
 }
+/**
+ * Parses and returns a list of 'for init' expressions.
+ *
+ * <pre>
+ *     forInit ::= statementExpression { COMMA statementExpression } | type variableDeclarators
+ * </pre>
+ *
+ * @return an AST for 'for init'.
+ */
+private ArrayList<JStatement> forInit():
+{
+    int line = 0;
+    JStatement forInit = null;
+    ArrayList<JStatement> forInitArray = new ArrayList<JStatement>();
+    Type type = null;
+    ArrayList<JVariableDeclarator> vdecls = null;
+}
+{
+    try{
+        LOOKAHEAD(type())
+        type = type()
+        {line=token.beginLine;}
+        vdecls = variableDeclarators(type)
+        {forInitArray.add(new JVariableDeclaration(line,vdecls));}|
+        (
+        forInit=statementExpression()
+        {forInitArray.add(forInit);}
+        (
+            <COMMA>
+            forInit=statementExpression()
+            {forInitArray.add(forInit);}
+        )*
+        )
+    }
+    catch (ParseException e) {
+        recoverFromError(new int[] { SEMI, EOF }, e);
+    }
+    { return forInitArray; }
+}
+
+
+ /**
+ * Parses and returns a list of 'for update' expressions.
+ *
+ * <pre>
+ *     forUpdate ::= statementExpression {COMMA statementExpression} // step 3  : for 
+ * </pre>
+ *
+ * @return an AST for 'for update'.
+ */
+
+private ArrayList<JStatement> forUpdate():
+{
+    JStatement forUpdateStatement = null;
+    ArrayList<JStatement> forUpdateStatements = new ArrayList<JStatement>();
+}
+{
+    try{
+        forUpdateStatement=statementExpression()
+        {forUpdateStatements.add(forUpdateStatement);}
+        (
+            <COMMA>
+            forUpdateStatement=statementExpression()
+            {forUpdateStatements.add(forUpdateStatement);}
+        )*
+    }
+    catch (ParseException e) {
+        recoverFromError(new int[] { SEMI, EOF }, e);
+    }
+    { return forUpdateStatements; }
+}
+
 
 /**
  * Parse try statement. step 3 try
@@ -1600,7 +1698,7 @@ private JExpression assignmentExpression(): {
 }
 {
     try {
-        lhs = conditionalOrExpression() { line = lhs.line(); }
+        lhs = conditionalExpression() { line = lhs.line(); }
         [
             <ASSIGN>
             rhs = assignmentExpression()
@@ -1628,6 +1726,42 @@ private JExpression assignmentExpression(): {
         ]
     }
     catch (ParseException e) {
+        recoverFromError(new int[] { SEMI, EOF }, e);
+    }
+    { return lhs; }
+}
+
+/**
+ * Parse a conditional-and expression.
+ * 
+ * <pre>
+ *   conditionalExpression ::= conditionalOrExpression
+ *                         [ QUESTION assignmentExpression COLON conditionalExpression] //level 12
+ * </pre>
+ * 
+ * @return an AST for a conditionalExpression.
+ */
+
+
+private JExpression conditionalExpression():
+{
+    int line = 0;
+    JExpression lhs = null;
+    JExpression assign = null;
+    JExpression condition = null;
+}
+{
+    try {
+        lhs = conditionalOrExpression()
+        { line = lhs.line(); }
+        [
+            <QUESTION>
+            assign = assignmentExpression()
+            <COLON>
+            condition = conditionalExpression()
+            { lhs = new JConditionalExpression(line, lhs, condition, assign); }
+        ]
+    } catch (ParseException e) {
         recoverFromError(new int[] { SEMI, EOF }, e);
     }
     { return lhs; }

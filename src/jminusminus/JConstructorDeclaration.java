@@ -12,7 +12,7 @@ import static jminusminus.CLConstants.*;
  * @see JMethodDeclaration
  */
 
-class JConstructorDeclaration extends JMethodDeclaration implements JMember{
+class JConstructorDeclaration extends JMethodDeclaration  {
 
     /** Does this constructor invoke this(...) or super(...)? */
     private boolean invokesConstructor;
@@ -38,17 +38,10 @@ class JConstructorDeclaration extends JMethodDeclaration implements JMember{
      */
 
     public JConstructorDeclaration(int line, ArrayList<String> mods,
-<<<<<<< HEAD
             String name, ArrayList<JFormalParameter> params, ArrayList<TypeName> exceptionList, JBlock body)
 
     {
         super(line, mods, name, Type.CONSTRUCTOR, params, exceptionList, body);
-=======
-            String name, ArrayList<JFormalParameter> params, ArrayList<Type> exceptionClauses, JBlock body)
-
-    {
-        super(line, mods, name, Type.CONSTRUCTOR, params, exceptionClauses, body);
->>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
     }
 
     /**
@@ -111,9 +104,6 @@ class JConstructorDeclaration extends JMethodDeclaration implements JMember{
             this.context.addEntry(param.line(), param.name(), defn);
         }
 
-        if(isThrows){
-
-        }
         if (body != null) {
             body = body.analyze(this.context);
         }
@@ -197,7 +187,7 @@ class JConstructorDeclaration extends JMethodDeclaration implements JMember{
             p.println("<ThrowsExceptions>");
 
             p.indentRight();
-            for (Type exception : exceptionClauses)
+            for (TypeName exception : exceptionClauses)
                 p.printf("<ExceptionClauses name=\"%s\"/>\n", exception.toString());
             p.indentLeft();
 
