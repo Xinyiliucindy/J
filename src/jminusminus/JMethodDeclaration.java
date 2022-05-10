@@ -3,6 +3,8 @@
 package jminusminus;
 
 import java.util.ArrayList;
+
+import java.util.stream.Collectors;
 import static jminusminus.CLConstants.*;
 
 /**
@@ -24,10 +26,10 @@ class JMethodDeclaration extends JAST implements JMember {
     protected ArrayList<JFormalParameter> params;
 
     /** The exception types. */
-    protected ArrayList<TypeName> exceptionClauses;
+    protected ArrayList<Type> exceptionClauses;
 
-    /** The exception types Names. */
-    protected ArrayList<String> exceptionNames;
+    // /** The exception types Names. */
+    // protected ArrayList<String> exceptionTypesNames;
 
     /** Method body. */
     protected JBlock body;
@@ -73,7 +75,7 @@ class JMethodDeclaration extends JAST implements JMember {
 
     public JMethodDeclaration(int line, ArrayList<String> mods,
         String name, Type returnType,
-        ArrayList<JFormalParameter> params, ArrayList<TypeName> exceptionClauses, JBlock body)
+        ArrayList<JFormalParameter> params, ArrayList<Type> exceptionClauses, JBlock body)
 
     {
         super(line);
@@ -91,7 +93,6 @@ class JMethodDeclaration extends JAST implements JMember {
         }else{
             this.isThrows = true;
         }
-        exceptionNames = new ArrayList<>();
     }
 
     /**
@@ -101,29 +102,30 @@ class JMethodDeclaration extends JAST implements JMember {
      * @param partial the code emitter (basically an abstraction for producing the partial class).
      */
 
+
+
     public void preAnalyze(Context context, CLEmitter partial) {
         // Resolve types of the formal parameters
         for (JFormalParameter param : params) {
             param.setType(param.type().resolve(context));
         }
-        // if(isThrows){
-        //     for(TypeName exception: exceptionClauses){
-        //         // exceptionClauses.set(exception., element)
-        //     }
-        // }
 
         // Resolve return type
         returnType = returnType.resolve(context);
 
         // Check proper local use of abstract
         if (isAbstract && body != null) {
-            JAST.compilationUnit.reportSemanticError(line(), "abstract method cannot have a body");
+            JAST.compilationUnit.reportSemanticError(line(),
+                    "abstract method cannot have a body");
         } else if (body == null && !isAbstract) {
-            JAST.compilationUnit.reportSemanticError(line(), "Method with null body must be abstract");
+            JAST.compilationUnit.reportSemanticError(line(),
+                    "Method with null body must be abstract");
         } else if (isAbstract && isPrivate) {
-            JAST.compilationUnit.reportSemanticError(line(), "private method cannot be declared abstract");
+            JAST.compilationUnit.reportSemanticError(line(),
+                    "private method cannot be declared abstract");
         } else if (isAbstract && isStatic) {
-            JAST.compilationUnit.reportSemanticError(line(), "static method cannot be declared abstract");
+            JAST.compilationUnit.reportSemanticError(line(),
+                    "static method cannot be declared abstract");
         }
 
         // Compute descriptor
@@ -150,21 +152,30 @@ class JMethodDeclaration extends JAST implements JMember {
      */
 
     public JAST analyze(Context context) {
-        MethodContext methodContext = new MethodContext(context, isStatic, returnType);
+        MethodContext methodContext = new MethodContext(context, 
+                isStatic, 
+                returnType);
         this.context = methodContext;
 
         if (!isStatic) {
             // Offset 0 is used to address "this".
             this.context.nextOffset();
         }
-        // if(isThrows){
-        //     for(TypeName exception : exceptionClauses){
-        //         exception.resolve(context);
-        //         if(!Throwable.class.isAssignableFrom(exception.classRep())){
-        //             JAST.compilationUnit.reportSemanticError(line(), "Exception " + exception + " is not a subclass of Throwable");
-        //         }
-        //     }
-        // }
+
+        exceptionClauses = (ArrayList<Type>) exceptionClauses
+                    .stream()
+                    .map(e -> e.resolve(context))
+                    .collect(Collectors.toList());
+        if(isThrows){
+            for(Type exception : exceptionClauses){
+                exception.resolve(context);
+                if(!Throwable.class.isAssignableFrom(exception.classRep())) {
+                    JAST.compilationUnit.reportSemanticError(line(),
+                            "Exception " + exception + " is not a subclass of Throwable");
+                }
+            }
+        }
+        
 
         // Declare the parameters. We consider a formal parameter 
         // to be always initialized, via a function call.
@@ -174,6 +185,8 @@ class JMethodDeclaration extends JAST implements JMember {
             defn.initialize();
             this.context.addEntry(param.line(), param.name(), defn);
         }
+
+
         if (body != null) {
             body = body.analyze(this.context);
             if (returnType!=Type.VOID && ! methodContext.methodHasReturn()){
@@ -195,9 +208,8 @@ class JMethodDeclaration extends JAST implements JMember {
      */
 
     public void partialCodegen(Context context, CLEmitter partial) {
-        // Generate a method with an empty body; need a return to
-        // make the class verifier happy.
-        partial.addMethod(mods, name, descriptor, exceptionNames, false);
+ 
+        partial.addMethod(mods, name, descriptor, null, false);
 
         // Add implicit RETURN
         if (returnType == Type.VOID) {
@@ -222,7 +234,7 @@ class JMethodDeclaration extends JAST implements JMember {
      */
 
     public void codegen(CLEmitter output) {
-//        output.addMethod(mods, name, descriptor, exceptionNames, false);
+        output.addMethod(mods, name, descriptor, null, false);
         if (body != null) {
             body.codegen(output);
         }
@@ -269,7 +281,7 @@ class JMethodDeclaration extends JAST implements JMember {
             p.println("<ThrowsClauses>");
 
             p.indentRight();
-            for (TypeName exception : exceptionClauses)
+            for (Type exception : exceptionClauses)
                 p.printf("<ExceptionType name=\"%s\"/>\n", exception.toString());
             p.indentLeft();
 

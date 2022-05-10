@@ -29,7 +29,7 @@ import static jminusminus.CLConstants.*;
  */
 public class JTryStatement extends JStatement {
 	/** Try clause. */
-	private JBlock tryPart;
+	private JBlock tryblock;
 
 	/** Catch clauses. */
 	private ArrayList<JCatchClause> catchClauses;
@@ -37,18 +37,9 @@ public class JTryStatement extends JStatement {
 	/** Finally clause. */
 	private JBlock finallyblock;
 
-	/**
-	 * Constructs an AST node for a try-statement given its line number, the test
-	 * expression, the consequent, and the alternate.
-	 *
-	 * @param line        line in which the try-statement occurs in the source file.
-	 * @param tryPart     try clause.
-	 * @param catchPart   catch clauses.
-	 * @param finallyPart finally clause.
-	 */
-	public JTryStatement(int line, JBlock tryPart, ArrayList<JCatchClause> catchClauses, JBlock finallyblock) {
+	public JTryStatement(int line, JBlock tryblock, ArrayList<JCatchClause> catchClauses, JBlock finallyblock) {
 		super(line);
-		this.tryPart = tryPart;
+		this.tryblock = tryblock;
 		this.catchClauses = catchClauses;
 		this.finallyblock = finallyblock;
 	}
@@ -60,7 +51,7 @@ public class JTryStatement extends JStatement {
 	 * @return the analyzed (and possibly rewritten) AST subtree.
 	 */
 	public JStatement analyze(Context context) {
-		tryPart = tryPart.analyze(context);
+		tryblock = tryblock.analyze(context);
 
 		if (catchClauses != null)
 			for (JCatchClause _catch : catchClauses)
@@ -83,7 +74,7 @@ public class JTryStatement extends JStatement {
 		String start = output.createLabel(), end = output.createLabel();
 
 		output.addLabel(start);
-		tryPart.codegen(output);
+		tryblock.codegen(output);
 		output.addLabel(end);
 
 		if (catchClauses != null)
@@ -108,7 +99,7 @@ public class JTryStatement extends JStatement {
 		p.printf("<JTryStatement line=\"%d\">\n", line());
 
 		p.indentRight();
-		tryPart.writeToStdOut(p);
+		tryblock.writeToStdOut(p);
 		p.indentLeft();
 
 		if (catchClauses != null)

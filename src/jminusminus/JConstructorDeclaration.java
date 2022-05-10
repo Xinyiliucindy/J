@@ -12,7 +12,7 @@ import static jminusminus.CLConstants.*;
  * @see JMethodDeclaration
  */
 
-class JConstructorDeclaration extends JMethodDeclaration  {
+class JConstructorDeclaration extends JMethodDeclaration implements JMember{
 
     /** Does this constructor invoke this(...) or super(...)? */
     private boolean invokesConstructor;
@@ -38,7 +38,7 @@ class JConstructorDeclaration extends JMethodDeclaration  {
      */
 
     public JConstructorDeclaration(int line, ArrayList<String> mods,
-            String name, ArrayList<JFormalParameter> params, ArrayList<TypeName> exceptionClauses, JBlock body)
+            String name, ArrayList<JFormalParameter> params, ArrayList<Type> exceptionClauses, JBlock body)
 
     {
         super(line, mods, name, Type.CONSTRUCTOR, params, exceptionClauses, body);
@@ -190,7 +190,7 @@ class JConstructorDeclaration extends JMethodDeclaration  {
             p.println("<ThrowsExceptions>");
 
             p.indentRight();
-            for (TypeName exception : exceptionClauses)
+            for (Type exception : exceptionClauses)
                 p.printf("<ExceptionClauses name=\"%s\"/>\n", exception.toString());
             p.indentLeft();
 

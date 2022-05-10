@@ -559,7 +559,7 @@ public class Parser {
             mustBe(IDENTIFIER);
             String name = scanner.previousToken().image();
             ArrayList<JFormalParameter> params = formalParameters();
-            ArrayList<TypeName> exceptionClauses = new ArrayList<TypeName>();
+            ArrayList<Type> exceptionClauses = new ArrayList<Type>();
             if (have(THROWS)) {
                 do
                     exceptionClauses.add(qualifiedIdentifier());
@@ -574,7 +574,7 @@ public class Parser {
                 mustBe(IDENTIFIER);
                 String name = scanner.previousToken().image();
                 ArrayList<JFormalParameter> params = formalParameters();
-                ArrayList<TypeName> exceptionClauses = new ArrayList<TypeName>();
+                ArrayList<Type> exceptionClauses = new ArrayList<Type>();
                 if (have(THROWS)) {
                     do
                         exceptionClauses.add(qualifiedIdentifier());
@@ -588,7 +588,7 @@ public class Parser {
                     mustBe(IDENTIFIER);
                     String name = scanner.previousToken().image();
                     ArrayList<JFormalParameter> params = formalParameters();
-                    ArrayList<TypeName> exceptionClauses = new ArrayList<TypeName>();
+                    ArrayList<Type> exceptionClauses = new ArrayList<Type>();
                     if (have(THROWS)) {
                         do
                             exceptionClauses.add(qualifiedIdentifier());
@@ -736,18 +736,27 @@ public class Parser {
     private JTryStatement tryStatement() {
         int line = scanner.token().line();
         JBlock tryblock= block();
-
+        //try-finally
         ArrayList<JCatchClause> catchClauses = new ArrayList<>();
-        //at least have one catch
-        mustBe(CATCH);
-            catchClauses.add(new JCatchClause(line, catchFormalParameter(), block()));
-        while (have(CATCH))
-            catchClauses.add(new JCatchClause(line, catchFormalParameter(), block()));
-            
-
         JBlock finallyblock = null;
-        if (have(FINALLY)){
+        //at least have one catch
+        // mustBe(CATCH);
+        //     catchClauses.add(new JCatchClause(line, catchFormalParameter(), block()));
+        // while (have(CATCH))
+        //     catchClauses.add(new JCatchClause(line, catchFormalParameter(), block()));
+        // if (have(FINALLY)){
+        //     finallyblock = block();
+        if(have(CATCH)){
+            catchClauses.add(new JCatchClause(line, catchFormalParameter(), block()));
+            while (have(CATCH))
+                catchClauses.add(new JCatchClause(line, catchFormalParameter(), block()));
+            if (have(FINALLY)){
             finallyblock = block();
+            }        
+        }else{
+            mustBe(FINALLY);
+            finallyblock = block();
+                
         }
             
 

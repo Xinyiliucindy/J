@@ -41,7 +41,7 @@ statement ::= block
             | statementExpression SEMI
 
 //step 2 Try
-tryStatement ::= TYR Block catchClause {catchClause} [FINALLY Block]
+tryStatement ::= TYR Block catchClause {catchClause} [FINALLY Block] | FINALLY Block
 catchClause ::= CATCH catchFormalParameter Block
 catchFormalParameter ::= LPAREN catchType {BTOR catchType} identifier RPAREN
 

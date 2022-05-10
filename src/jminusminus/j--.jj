@@ -573,8 +573,8 @@ private JMember memberDecl(ArrayList<String> mods): {
     JBlock body = null;
     ArrayList<JVariableDeclarator> variableDeclarators = null;
     JMember memberDecl = null;
-    TypeName exception = null;
-    ArrayList<TypeName> exceptionClauses = new ArrayList<TypeName>();
+    Type exception = null;
+    ArrayList<Type> exceptionClauses = new ArrayList<Type>();
 }
 {
     try {
@@ -587,6 +587,7 @@ private JMember memberDecl(ArrayList<String> mods): {
             }
             params = formalParameters()
              [
+            LOOKAHEAD(<THROWS>)
                 <THROWS> 
                 exception = qualifiedIdentifier()
                 { exceptionClauses.add(exception); }
@@ -599,7 +600,7 @@ private JMember memberDecl(ArrayList<String> mods): {
             body = block()
             {
                 memberDecl = new JConstructorDeclaration(line, mods,
-                                                         name, params, exceptionClauses , body);
+                                                         name, params, null, body);
             }
         ) |
         LOOKAHEAD((<VOID> | type()) <IDENTIFIER> <LPAREN>)
@@ -612,6 +613,7 @@ private JMember memberDecl(ArrayList<String> mods): {
             <IDENTIFIER> { name = token.image; }
             params = formalParameters() 
             [
+                LOOKAHEAD(<THROWS>)
                 <THROWS> exception = qualifiedIdentifier()
                 { exceptionClauses.add(exception); }
                 (
@@ -803,13 +805,19 @@ private JStatement statement(): {
     try {
         <TRY> { line = token.beginLine; }
         tryblock = block()
-        aCatchClause = catchClause()
-        { catchClauses.add(aCatchClause); }
         (
+            LOOKAHEAD (<CATCH>)
             aCatchClause = catchClause()
             { catchClauses.add(aCatchClause); }
-        )*
-        [<FINALLY> finallyblock= block()]
+            (
+                aCatchClause = catchClause()
+                { catchClauses.add(aCatchClause); }
+            )*
+            [<FINALLY> finallyblock= block()]
+        |
+            LOOKAHEAD(<FINALLY>)
+            <FINALLY> finallyblock= block()
+        )
     }
     catch (ParseException e) {
         recoverFromError(new int[] { SEMI, EOF }, e);
