@@ -67,11 +67,6 @@ abstract class JBinaryExpression extends JExpression {
 
 }
 
-/**
- * The AST node for a plus (+) expression. In j--, as in Java, + is overloaded
- * to denote addition for numbers and concatenation for Strings.
- */
-
 class JPlusOp extends JBinaryExpression {
 
     /**
@@ -110,7 +105,11 @@ class JPlusOp extends JBinaryExpression {
                     .analyze(context);
         } else if (lhs.type() == Type.INT && rhs.type() == Type.INT) {
             type = Type.INT;
-        } else {
+        } else if (lhs.type().equals(Type.DOUBLE)) {
+            lhs.type().mustMatchExpected(line(), Type.DOUBLE);
+            rhs.type().mustMatchExpected(line(), Type.DOUBLE);
+            type = Type.DOUBLE;
+        }  else {
             type = Type.ANY;
             JAST.compilationUnit.reportSemanticError(line(),
                     "Invalid operand types for +");
@@ -130,13 +129,117 @@ class JPlusOp extends JBinaryExpression {
      */
 
     public void codegen(CLEmitter output) {
-        if (type == Type.INT) {
-            lhs.codegen(output);
-            rhs.codegen(output);
+        lhs.codegen(output);
+        rhs.codegen(output);
+        if (type == Type.INT)
             output.addNoArgInstruction(IADD);
-        }
+        else if(type == Type.DOUBLE)
+            output.addNoArgInstruction(DADD);
     }
 
+}
+//Remainder
+class JRemainderOp extends JBinaryExpression {
+    public JRemainderOp ( int line , JExpression lhs , JExpression rhs ) {
+        super ( line , "/" , lhs , rhs );}
+        public JExpression analyze ( Context context ) {
+            lhs = ( JExpression ) lhs . analyze ( context );
+            rhs = ( JExpression ) rhs . analyze ( context );
+            if (lhs.type().equals(Type.DOUBLE)) {
+                lhs.type().mustMatchExpected(line(), Type.DOUBLE);
+                rhs.type().mustMatchExpected(line(), Type.DOUBLE);
+                type = Type.DOUBLE;
+            }
+            else if (lhs.type().equals(Type.INT)) {
+                lhs.type().mustMatchExpected(line(), Type.INT);
+                rhs.type().mustMatchExpected(line(), Type.INT);
+                type = Type.INT;
+            }
+            else {
+                type = Type.ANY;
+                JAST.compilationUnit.reportSemanticError(line(), "wrong types for %");
+
+            }
+            return this;
+            }
+        
+        public void codegen ( CLEmitter output ) {
+            lhs . codegen ( output );
+            rhs . codegen ( output );
+            if(type == Type.INT)
+            output.addNoArgInstruction(IDIV);
+            else if(type == Type.DOUBLE)
+            output.addNoArgInstruction(DDIV);
+            }
+    }
+//division
+class JDivideOp extends JBinaryExpression {
+    public JDivideOp ( int line , JExpression lhs , JExpression rhs ) {
+        super ( line , "/" , lhs , rhs );
+    }
+    public JExpression analyze ( Context context ) {
+        lhs = ( JExpression ) lhs . analyze ( context );
+        rhs = ( JExpression ) rhs . analyze ( context );
+        if (lhs.type().equals(Type.DOUBLE)) {
+            lhs.type().mustMatchExpected(line(), Type.DOUBLE);
+            rhs.type().mustMatchExpected(line(), Type.DOUBLE);
+            type = Type.DOUBLE;
+        }
+        else if (lhs.type().equals(Type.INT)) {
+            lhs.type().mustMatchExpected(line(), Type.INT);
+            rhs.type().mustMatchExpected(line(), Type.INT);
+            type = Type.INT;
+        }
+        else {
+            type = Type.ANY;
+            JAST.compilationUnit.reportSemanticError(line(), "wrong types for /");
+
+        }
+        return this;
+        }
+    public void codegen ( CLEmitter output ) {
+        lhs . codegen ( output );
+        rhs . codegen ( output );
+        if(type == Type.INT)
+        output.addNoArgInstruction(IDIV);
+        else if(type == Type.DOUBLE)
+        output.addNoArgInstruction(DDIV);
+        }
+ }
+//bitwiseor
+ class JBitwiseOrOp extends JBinaryExpression {
+    public JBitwiseOrOp(int line, JExpression lhs, JExpression rhs) {
+        super (line, "|", lhs, rhs);
+    }
+
+
+
+    public JExpression analyze ( Context context ) {
+         lhs = ( JExpression ) lhs . analyze ( context );
+            rhs = ( JExpression ) rhs . analyze ( context );
+            if (lhs.type().equals(Type.DOUBLE)) {
+                lhs.type().mustMatchExpected(line(), Type.DOUBLE);
+                rhs.type().mustMatchExpected(line(), Type.DOUBLE);
+                type = Type.DOUBLE;
+            }
+            else if (lhs.type().equals(Type.INT)) {
+                lhs.type().mustMatchExpected(line(), Type.INT);
+                rhs.type().mustMatchExpected(line(), Type.INT);
+                type = Type.INT;
+            }
+            else {
+                type = Type.ANY;
+                JAST.compilationUnit.reportSemanticError(line(), "wrong types for %");
+
+            }
+            return this;
+        }
+
+    public void codegen(CLEmitter output) {
+        lhs.codegen(output);
+        rhs.codegen(output);
+        output.addNoArgInstruction(IOR);
+        }    
 }
 
 /**
@@ -174,11 +277,24 @@ class JSubtractOp extends JBinaryExpression {
     public JExpression analyze(Context context) {
         lhs = (JExpression) lhs.analyze(context);
         rhs = (JExpression) rhs.analyze(context);
-        lhs.type().mustMatchExpected(line(), Type.INT);
-        rhs.type().mustMatchExpected(line(), Type.INT);
-        type = Type.INT;
+        if (lhs.type().equals(Type.DOUBLE)) {
+            lhs.type().mustMatchExpected(line(), Type.DOUBLE);
+            rhs.type().mustMatchExpected(line(), Type.DOUBLE);
+            type = Type.DOUBLE;
+        }
+        else if (lhs.type().equals(Type.INT)) {
+            lhs.type().mustMatchExpected(line(), Type.INT);
+            rhs.type().mustMatchExpected(line(), Type.INT);
+            type = Type.INT;
+        }
+        else {
+            type = Type.ANY;
+            JAST.compilationUnit.reportSemanticError(line(), "wrong types for %");
+
+        }
         return this;
     }
+
 
     /**
      * Generating code for the - operation involves generating code for the two
@@ -192,7 +308,12 @@ class JSubtractOp extends JBinaryExpression {
     public void codegen(CLEmitter output) {
         lhs.codegen(output);
         rhs.codegen(output);
-        output.addNoArgInstruction(ISUB);
+        if (type == Type.DOUBLE){
+          output.addNoArgInstruction(DSUB);
+        }else {
+          output.addNoArgInstruction(ISUB);
+        }
+        
     }
 
 }
@@ -232,9 +353,27 @@ class JMultiplyOp extends JBinaryExpression {
     public JExpression analyze(Context context) {
         lhs = (JExpression) lhs.analyze(context);
         rhs = (JExpression) rhs.analyze(context);
-        lhs.type().mustMatchExpected(line(), Type.INT);
-        rhs.type().mustMatchExpected(line(), Type.INT);
-        type = Type.INT;
+        if (lhs.type() == Type.DOUBLE) {
+            lhs.type().mustMatchExpected(line(), Type.DOUBLE);
+            rhs.type().mustMatchOneOf(line(), Type.DOUBLE, Type.INT);
+            type = Type.DOUBLE;
+
+        }
+        else if (lhs.type() == Type.INT) {
+            lhs.type().mustMatchExpected(line(), Type.INT);
+            if (rhs.type() == Type.INT){
+                rhs.type().mustMatchExpected(line(), Type.INT);
+                type = Type.INT;
+            }
+            else{
+                rhs.type().mustMatchExpected(line(), Type.DOUBLE);
+                type = Type.DOUBLE;
+
+            }
+        }
+        else {
+            type = Type.NULLTYPE;
+        }
         return this;
     }
 
@@ -250,92 +389,15 @@ class JMultiplyOp extends JBinaryExpression {
     public void codegen(CLEmitter output) {
         lhs.codegen(output);
         rhs.codegen(output);
-        output.addNoArgInstruction(IMUL);
+        if(type == Type.INT)
+            output.addNoArgInstruction(IMUL);
+        else if(type == Type.DOUBLE)
+            output.addNoArgInstruction(DMUL);
     }
 
 }
 
 
-/**
- * The AST node for a divide(/) expression.
- */
-
-class JDivideOp extends JBinaryExpression {
-
-    public JDivideOp(int line, JExpression lhs, JExpression rhs) {
-        super(line, "/", lhs, rhs);
-    }
-
-    public JExpression analyze (Context context) { 
-        lhs = (JExpression) lhs.analyze(context);
-        rhs = (JExpression) rhs.analyze(context);
-        lhs.type().mustMatchExpected(line(), Type.INT);
-        rhs.type().mustMatchExpected(line(), Type.INT);
-        type = Type.INT;
-        return this;
-    }
-
-    public void codegen(CLEmitter output) {
-        lhs.codegen(output);
-        rhs.codegen(output);
-        output.addNoArgInstruction(IDIV);
-    }
-
-}
-
-
-/**
- * The AST node for a remainder(%) expression.
- */
-
-class JRemainOp extends JBinaryExpression {
-
-    public JRemainOp(int line, JExpression lhs, JExpression rhs) {
-        super(line, "%", lhs, rhs);
-    }
-
-    public JExpression analyze (Context context) { 
-        lhs = (JExpression) lhs.analyze(context);
-        rhs = (JExpression) rhs.analyze(context);
-        lhs.type().mustMatchExpected(line(), Type.INT);
-        rhs.type().mustMatchExpected(line(), Type.INT);
-        type = Type.INT;
-        return this;
-    }
-
-    public void codegen(CLEmitter output) {
-        lhs.codegen(output);
-        rhs.codegen(output);
-        output.addNoArgInstruction(IREM);
-    }
-
-}
-
-
-/**
- * The AST node for a bitwiseOR (|) expression.
- */
-
-class JBitwiseOrOp extends JBinaryExpression {
-    public JBitwiseOrOp(int line, JExpression lhs, JExpression rhs) {
-        super (line, "|", lhs, rhs);
-    }
-
-    public JExpression analyze ( Context context ) {
-        lhs = ( JExpression ) lhs . analyze ( context );
-        rhs = ( JExpression ) rhs . analyze ( context );
-        lhs . type (). mustMatchExpected ( line () , Type . INT );
-        rhs . type (). mustMatchExpected ( line () , Type . INT );
-        type = Type . INT ;
-        return this ;
-        }
-
-    public void codegen(CLEmitter output) {
-        lhs.codegen(output);
-        rhs.codegen(output);
-        output.addNoArgInstruction(IOR);
-        }    
-}
 
 
 /**

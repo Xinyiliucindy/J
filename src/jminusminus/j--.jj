@@ -145,15 +145,33 @@ SKIP: {<SINGLE_LINE_COMMENT: "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>}
 TOKEN: {
   <ABSTRACT: "abstract">
 | <BOOLEAN: "boolean">
+| <BREAK: "break"> //step 3
+| <BYTE: "byte"> //step 3
+| <CASE: "case"> //step 3
+| <CATCH: "catch"> //step 3
 | <CHAR: "char">
 | <CLASS: "class">
+| <CONST: "const"> //step 3
+| <CONTINUE: "continue"> //step 3
+
+| <DO: "do"> //step 3
+| <DOUBLE: "double"> //step 3
 | <ELSE: "else">
 | <EXTENDS: "extends">
+| <FINAL: "final"> //step 3
+| <FINALLY: "finally"> //step 3
+| <FLOAT: "float"> //step 3
 | <FALSE: "false">
+| <FOR: "for"> //step 3
+| <GOTO: "goto"> //step 3
 | <IF: "if">
+| <IMPLEMENTS: "implements"> //step 3
 | <IMPORT: "import">
 | <INSTANCEOF: "instanceof">
 | <INT: "int">
+| <INTERFACE: "interface"> //step 3
+| <LONG: "long"> //step 3
+| <NATIVE: "native"> //step 3
 | <NEW: "new">
 | <NULL: "null">
 | <PACKAGE: "package">
@@ -161,11 +179,20 @@ TOKEN: {
 | <PROTECTED: "protected">
 | <PUBLIC: "public">
 | <RETURN: "return">
+| <SHORT: "short"> //step 3
 | <STATIC: "static">
+| <STRICTFP: "strictfp"> //step 3
 | <SUPER: "super">
+| <SWITCH: "switch"> //step 3
+| <SYNCHRONIZED: "synchronized"> //step 3
 | <THIS: "this">
+| <THROW: "throw"> //step 3
+| <THROWS: "throws"> //step 3
+| <TRANSIENT: "transient"> //step 3
+| <TRY: "try"> //step 3
 | <TRUE: "true">
 | <VOID: "void">
+| <VOLATILE: "volatile"> //step 3
 | <WHILE: "while">
 }
 
@@ -173,16 +200,41 @@ TOKEN: {
 TOKEN: {
   <PLUS: "+">
 | <ASSIGN: "=">
-| <DEC: "--">
+
 | <EQUAL: "==">
 | <GT: ">">
+| <GT_EQUAL: ">="> //step 3
 | <INC: "++">
+| <AND: "&"> //step 3
+| <AND_ASSIGN: "&="> //step 3
 | <LAND: "&&">
+| <LT: "<"> //step 3
 | <LE: "<=">
+| <BITXOR: "^"> //step 3
+| <BITXOR_ASSIGN: "^="> //step 3
 | <LNOT: "!">
+| <NOT_EQUAL: "!="> //step 3
 | <MINUS: "-">
+| <MINUS_ASSIGN: "-="> //step 3
+| <DEC: "!-"> //step 3
 | <PLUS_ASSIGN: "+=">
 | <STAR: "*">
+| <STAR_ASSIGN: "*="> //step 3
+| <DIV: "/"> //step 3
+| <DIV_ASSIGN: "/="> //step 3
+| <REM: "%"> //step 3
+| <REM_ASSIGN: "%="> //step 3
+| <SSLEFT: "<<"> //step 3
+| <SSL_ASSIGN: "<<="> //step 3
+| <SSRIGHT: ">>"> //step 3
+| <SSR_ASSIGN: ">>="> //step 3
+| <USRIGHT: ">>>"> //step 3
+| <USR_ASSIGN: ">>>="> //step 3
+| <COMPLEMENT: "~"> //step 3
+| <BITWISE_OR: "|"> //step 3
+| <BITWISE_OR_ASSIGN: "|="> //step 3
+| <LOGICAL_OR: "||"> //step 3
+| <QUESTION: "?"> //step 3
 }
 
 // Separators (these could be combined with the reserved words)
@@ -196,6 +248,7 @@ TOKEN: {
 | <SEMI: ";">
 | <COMMA: ",">
 | <DOT: ".">
+| <COLON: ":"> //step 3
 }
 
 // Identifiers
@@ -208,11 +261,16 @@ TOKEN: {
 
 // Literals
 TOKEN: {
-  <INT_LITERAL: ("0" | <NON_ZERO_DIGIT> (<DIGIT>)*) >
+ <#EXPONENT: ["e","E"](["+","-"])? (<DIGIT>)+>
+| <#DOUBLE_END: ["d","D"]>
+| <DOUBLE_LITERAL: "."(<DIGIT>)* (<EXPONENT>(<DOUBLE_END>)?|(<DOUBLE_END>)?) 
+                  |(<DIGIT>)+ "."(<DIGIT>)* (<EXPONENT>(<DOUBLE_END>)?|(<DOUBLE_END>)?) >
+| <INT_LITERAL: ("0" | <NON_ZERO_DIGIT> (<DIGIT>)*) >
 | <CHAR_LITERAL: "'" (<ESC> | ~["'","\\","\n","\r"]) "'" >
 | <STRING_LITERAL: "\"" (<ESC> | ~["\"","\\","\n","\r"])* "\"" >
 | <#ESC: "\\" ["n","t","b","r","f","\\","'","\""] >
 }
+
 
 // For anything else, we return an ERROR token. Without this 
 // definition the TokenManager will throw an Error when a lexical 
@@ -625,6 +683,7 @@ private JStatement blockStatement(): {
  * <pre>
  *   statement ::= block
  *               | IF parExpression statement [ELSE statement]
+ *               | FOR([forInit] SEMI [expression] SEMI [forUpdate]) statement
  *               | WHILE parExpression statement
  *               | RETURN [expression] SEMI
  *               | SEMI
@@ -686,6 +745,7 @@ private JStatement statement(): {
     }
     { return statement; }
 }
+
 
 /**
  * Parse formal parameters.
@@ -1008,6 +1068,7 @@ private Type basicType(): {
     try {
         <BOOLEAN> { type = Type.BOOLEAN; } |
         <CHAR> { type = Type.CHAR; } |
+        <DOUBLE> { type = Type.DOUBLE; } |
         <INT> { type = Type.INT; }
     }
     catch (ParseException e) {
@@ -1122,7 +1183,7 @@ private JExpression expression(): {
  *   assignmentExpression ::= 
  *       conditionalAndExpression                // level 13
  *           [( ASSIGN       // must be valid lhs
- *            | PLUS_ASSIGN 
+ *            | PLUS_ASSIGN |STAR_ASSIGN|DIV_ASSIGN|MINUS_ASSIGN|REM_ASSIGN
  *            )
  *            assignmentExpression]
  * </pre>
@@ -1141,7 +1202,23 @@ private JExpression assignmentExpression(): {
             <ASSIGN>
             rhs = assignmentExpression()
             { lhs = new JAssignOp(line, lhs, rhs); } |
+
+            <STAR_ASSIGN>
+            rhs = assignmentExpression()
+            { lhs = new JMultiAssignOp(line, lhs, rhs); } |
+
+            <DIV_ASSIGN>
+            rhs = assignmentExpression()
+            { lhs = new JDivAssignOp(line, lhs, rhs); } |
             
+            <MINUS_ASSIGN>
+            rhs = assignmentExpression()
+            { lhs = new JMinusAssignOp(line, lhs, rhs); } |
+
+            <REM_ASSIGN>
+            rhs = assignmentExpression()
+            { lhs = new JRemAssignOp(line, lhs, rhs); } |
+
             <PLUS_ASSIGN>
             rhs = assignmentExpression()
             { lhs = new JPlusAssignOp(line, lhs, rhs); }
@@ -1306,9 +1383,15 @@ private JExpression multiplicativeExpression(): {
     try {
         lhs = unaryExpression() { line = lhs.line(); }
         (
-            <STAR>
+            <STAR> 
             rhs = unaryExpression()
-            { lhs = new JMultiplyOp(line, lhs, rhs); }
+            { lhs = new JMultiplyOp( line, lhs, rhs ); } |
+			<DIV>
+			rhs = unaryExpression()
+			{ lhs = new JDivideOp( line, lhs, rhs ); } |
+			<REM>
+			rhs = unaryExpression()
+			{ lhs = new JRemainderOp( line, lhs, rhs ); }
         )*
     }
     catch (ParseException e) {
@@ -1672,6 +1755,9 @@ private JExpression literal(): {
     try {
         <INT_LITERAL>
         { expr = new JLiteralInt(token.beginLine, token.image); } |
+
+        <DOUBLE_LITERAL>
+        { expr = new JLiteralDouble(token.beginLine, token.image); } |
 
         <CHAR_LITERAL>
         { expr = new JLiteralChar(token.beginLine, token.image); } |

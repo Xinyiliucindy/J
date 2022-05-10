@@ -31,10 +31,14 @@ blockStatement ::= localVariableDeclarationStatement
 
 statement ::= block
             | IF parExpression statement [ELSE statement]
-            | WHILE parExpression statement 
+            | FOR LPAREN [forInit] SEMI [expression] SEMI [forUpdate] RPAREN statement // step 3
             | RETURN [expression] SEMI
             | SEMI 
+            | TRY block {CATCH block} [FINALLY block]
+            | THROW expression SEMI
             | statementExpression SEMI
+            
+            
 
 formalParameters ::= LPAREN 
                        [formalParameter {COMMA formalParameter}]
@@ -43,6 +47,10 @@ formalParameters ::= LPAREN
 formalParameter ::= type IDENTIFIER
 
 parExpression ::= LPAREN expression RPAREN
+
+forInit ::= statementExpression {COMMA statementExpression} | [final] type variableDeclarators // step 3  : for 
+
+forUpdate ::= statementExpression {COMMA statementExpression} // step 3  : for 
 
 localVariableDeclarationStatement ::= type variableDeclarators SEMI
 
@@ -73,7 +81,7 @@ statementExpression ::= expression // but must have side-effect, eg i++
 expression ::= assignmentExpression
 
 // level 13 
-assignmentExpression ::= conditionalAndExpression  // must be a valid lhs
+assignmentExpression ::= conditionalExpression  // must be a valid lhs
                            [(ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN                            
                             | STAR_ASSIGN | DIV_ASSIGN | REM_ASSIGN                       
                             | SSL_ASSIGN | SSR_ASSIGN | USR_ASSIGN
@@ -81,7 +89,7 @@ assignmentExpression ::= conditionalAndExpression  // must be a valid lhs
 
 // level 12
 conditionalExpression ::= conditionalOrExpression
-                          [ QUESTION assignmentExpression : conditionalExpression]
+                          [ QUESTION assignmentExpression COLON conditionalExpression]
 
 //level 11
 conditionalOrExpression ::= conditionalAndExpression 
@@ -166,7 +174,7 @@ creator ::= (basicType | qualifiedIdentifier)
 newArrayDeclarator ::= LBRACK expression RBRACK 
                          {LBRACK expression RBRACK} {LBRACK RBRACK}
 
-literal ::= INT_LITERAL | CHAR_LITERAL | STRING_LITERAL
+literal ::= INT_LITERAL | CHAR_LITERAL | STRING_LITERAL|DOUBLE_LITERAL
           | TRUE        | FALSE        | NULL
 
 

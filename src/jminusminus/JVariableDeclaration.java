@@ -41,7 +41,6 @@ class JVariableDeclaration extends JStatement {
         this.decls = decls;
         initializations = new ArrayList<JStatement>();
     }
-
     /**
      * Returns the list of modifiers.
      * 
@@ -69,6 +68,11 @@ class JVariableDeclaration extends JStatement {
             int offset = ((LocalContext) context).nextOffset();
             LocalVariableDefn defn = new LocalVariableDefn(decl.type().resolve(
                     context), offset);
+
+            if (defn.type() == Type.DOUBLE) {
+                        ((LocalContext)context).nextOffset();
+                    }
+
 
             // First, check for shadowing
             IDefn previousDefn = context.lookup(decl.name());
