@@ -4,6 +4,8 @@ package jminusminus;
 
 import java.util.ArrayList;
 
+import javax.sql.rowset.spi.SyncFactory;
+
 // import jminusminus.JMultiplyOp;
 // import jminusminus.JDivideOp;
 
@@ -519,7 +521,7 @@ public class Parser {
             }while(have(COMMA));
         }
 
-        return new JClassDeclaration(line, mods, name, superClass, classBody());
+        return new JClassDeclaration(line, mods, name, superClass, implementedInterfaces, classBody());
     }
 
         /**
@@ -537,60 +539,44 @@ public class Parser {
 
     private ArrayList<JMember> classBody() {
         ArrayList<JMember> members = new ArrayList<JMember>();
-        // ArrayList<JBlock> IIB = new ArrayList<JBlock>();
-        // ArrayList<JBlock> StaticBlock = new ArrayList<JBlock>();
-        ArrayList<JStatement> statements = new ArrayList<JStatement>();
-
+        JBlock body = null;
+        
         mustBe(LCURLY);
         while (!see(RCURLY) && !see(EOF)) {
             int line = scanner.token().line();
             // SEMI
-            if (have(SEMI)){ }
+            if (see(SEMI)){ }
             
-            // IIB (instance initialization block) and static block
-            if (have(LCURLY)) {
+            // Parse IIB
+            else if (see(LCURLY)) {
+                ArrayList<String> mods = modifiers();
                 line = scanner.token().line();
-                while(!see(RCURLY) && !see(EOF)) {
-                    line = scanner.token().line();
-                    JBlock body = block();
-                    members.add(new JInitializationBlock(line, false, body)); 
-                    // IIB.add(body);
-                }
-                mustBe(RCURLY);
+                body = block();
+                JMember iibMember = new JInitializationBlock(line, mods, body);
+                members.add(iibMember);
             }
-            
-            // static block
-            // if (have(STATIC)) {
-            //     line = scanner.token().line();
-            //     // ArrayList<JStatement> statements = new ArrayList<JStatement>();
-                
-            //     if(see(LCURLY)) {
-            //         while(!see(RCURLY) && !see(EOF)) {
-            //             line = scanner.token().line();
-            //             statements.add(blockStatement());
-            //             JBlock body = block();
-            //             members.add(new JInitializationBlock(line, true, body));
-            //         }
-            //         mustBe(RCURLY);
-            //     }
-                // else {
-                //     ArrayList<String> mods = modifiers();
-                //     mods.add("static");
-                //     if (seeLocalVariableDeclaration()) 
-                //         members.add(memberDecl(mods));
-                    
-                //     else{
-                //         statements.add(statement());
-                //     }
-                // }
-            // }       
-            
-            // modifiers member declaration
+            // Parse SIB
+            else if (have(STATIC)) {
+                ArrayList<String> mods = modifiers();
+                mods.add("static");
+                if (see(LCURLY)) {
+                    line = scanner.token().line();
+                    body = block();  
+                    JMember staticMember = new JInitializationBlock(line, mods, body);
+                    members.add(staticMember);
+                }
+                else {
+                    // other static field declaration
+                    members.add(memberDecl(mods));
+                }
+            }
+
+            // member declaration
             else {
                 members.add(memberDecl(modifiers()));
             }
         }
-        
+
         mustBe(RCURLY);
         return members;
     }
@@ -644,10 +630,10 @@ public class Parser {
         ArrayList<JMember> members = new ArrayList<JMember>();
         mustBe(LCURLY);
         while (!see(RCURLY) && !see(EOF)) {
-            if (have(SEMI)) { }
-            else {
-                members.add(memberDecl(modifiers()));
-            }
+            // if (have(SEMI)) { }
+            // else {
+                members.add(interfaceMemberDecl(modifiers()));
+            // }
         }
         mustBe(RCURLY);
         return members;
@@ -670,9 +656,53 @@ public class Parser {
 
      private JMember interfaceMemberDecl(ArrayList<String> mods) {
         int line = scanner.token().line();
-        JMember interfaceMemberDecl = null;
-        
-        return interfaceMemberDecl;
+        JMember interfaceMember = null;
+        Type type = null;
+        // check if interface is public
+        if (!mods.contains("public")) {
+            mods.add("public");
+        }
+
+        if (have(VOID)) {
+            type = Type.VOID;
+            mustBe(IDENTIFIER);
+            String name = scanner.previousToken().image();
+            ArrayList<JFormalParameter> params = formalParameters();
+            ArrayList<TypeName> exceptionList = new ArrayList<TypeName>();
+            if(see(THROWS)) {
+                do {
+                    exceptionList.add(qualifiedIdentifier());
+                }while (have(COMMA));
+            }
+            mustBe(SEMI);
+            interfaceMember = new JMethodDeclaration(line, mods, name, type, params, exceptionList, null);
+        }
+        else {
+            type = type();
+            if (seeIdentLParen()) {
+                mustBe(IDENTIFIER);
+                String name = scanner.previousToken().image();
+                ArrayList<JFormalParameter> params = formalParameters();
+                ArrayList<TypeName> exceptionList = new ArrayList<TypeName>();
+                if(see(THROWS)) {
+                    do {
+                        exceptionList.add(qualifiedIdentifier());
+                    }while (have(COMMA));
+                }
+                mustBe(SEMI);
+                interfaceMember = new JMethodDeclaration(line, mods, name, type, params, exceptionList, null);
+            }
+            else {
+                // interface field variable is static by default
+                if (!mods.contains("static")) {
+                    mods.add("static");
+                }
+                interfaceMember = new JFieldDeclaration(line, mods, variableDeclarators(type));
+                mustBe(SEMI);
+            }
+        }
+       
+        return interfaceMember;
      }
 
 
@@ -704,9 +734,15 @@ public class Parser {
             mustBe(IDENTIFIER);
             String name = scanner.previousToken().image();
             ArrayList<JFormalParameter> params = formalParameters();
+            ArrayList<TypeName> exceptionList = new ArrayList<TypeName>();
+            if(see(THROWS)) {
+                do {
+                    exceptionList.add(qualifiedIdentifier());
+                }while (have(COMMA));
+            }
             JBlock body = block();
             memberDecl = new JConstructorDeclaration(line, mods, name, params,
-                    body);
+                     exceptionList, body);
         } else {
             Type type = null;
             if (have(VOID)) {
@@ -715,9 +751,15 @@ public class Parser {
                 mustBe(IDENTIFIER);
                 String name = scanner.previousToken().image();
                 ArrayList<JFormalParameter> params = formalParameters();
+                ArrayList<TypeName> exceptionList = new ArrayList<TypeName>();
+                if(see(THROWS)) {
+                    do {
+                        exceptionList.add(qualifiedIdentifier());
+                    }while (have(COMMA));
+                }
                 JBlock body = have(SEMI) ? null : block();
                 memberDecl = new JMethodDeclaration(line, mods, name, type,
-                        params, body);
+                        params, exceptionList, body);
             } else {
                 type = type();
                 if (seeIdentLParen()) {
@@ -725,9 +767,15 @@ public class Parser {
                     mustBe(IDENTIFIER);
                     String name = scanner.previousToken().image();
                     ArrayList<JFormalParameter> params = formalParameters();
+                    ArrayList<TypeName> exceptionList = new ArrayList<TypeName>();
+                    if(see(THROWS)) {
+                        do {
+                            exceptionList.add(qualifiedIdentifier());
+                        }while (have(COMMA));
+                    }
                     JBlock body = have(SEMI) ? null : block();
                     memberDecl = new JMethodDeclaration(line, mods, name, type,
-                            params, body);
+                            params, exceptionList, body);
                 } else {
                     // Field
                     memberDecl = new JFieldDeclaration(line, mods,

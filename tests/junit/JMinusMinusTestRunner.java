@@ -19,18 +19,18 @@ public class JMinusMinusTestRunner {
         suite.addTestSuite(HelloWorldTest.class);
         suite.addTestSuite(FactorialTest.class);
         suite.addTestSuite(GCDTest.class);
-        suite.addTestSuite(SeriesTest.class);
+        // suite.addTestSuite(SeriesTest.class);
         suite.addTestSuite(ClassesTest.class);
-        suite.addTestSuite(DivisionTest.class);
-        suite.addTestSuite(RemainderTest.class);
-        suite.addTestSuite(SignedShiftLeftTest.class);
-        suite.addTestSuite(SignedShiftRightTest.class);
-        suite.addTestSuite(UnsignedShiftRightTest.class);
-        suite.addTestSuite(BitwiseOrTest.class);
-        suite.addTestSuite(ComplementTest.class);
-        suite.addTestSuite(UnaryPlusTest.class);
-        suite.addTestSuite(BitXorTest.class);
-        suite.addTestSuite(BitwiseAndTest.class);
+        // suite.addTestSuite(DivisionTest.class);
+        // suite.addTestSuite(RemainderTest.class);
+        // suite.addTestSuite(SignedShiftLeftTest.class);
+        // suite.addTestSuite(SignedShiftRightTest.class);
+        // suite.addTestSuite(UnsignedShiftRightTest.class);
+        // suite.addTestSuite(BitwiseOrTest.class);
+        // suite.addTestSuite(ComplementTest.class);
+        // suite.addTestSuite(UnaryPlusTest.class);
+        // suite.addTestSuite(BitXorTest.class);
+        // suite.addTestSuite(BitwiseAndTest.class);
         return suite;
     }
 

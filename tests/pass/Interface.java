@@ -1,48 +1,31 @@
 package pass;
 
 import java.lang.System;
+import java.nio.file.SecureDirectoryStream;
 
-interface Friend{
-    public void friend();
+interface FirstInterface {
+    public abstract void myFirstMethod(); // interface method
 }
 
-interface Cute{
-    public void cute();
+interface SecondInterface {
+    public abstract void mySecondMethod(); // interface method
 }
 
-interface Animal extends Friend, Cute{
-    public void eat();
-    public void travel();
+interface ThirdInterface extends SecondInterface {
+    public abstract void mySecondMethod();
 }
 
-public class Dog implements Animal{
-    public void eat(){
-        System.out.println("Dogs can eat.");
+public class DemoClass implements FirstInterface, SecondInterface, ThirdInterface {
+    public void myFirstMethod() {
+        System.out.println("Some text..");
+    }
+    public void mySecondMethod() {
+        System.out.println("Some other text...");
     }
 
-    public void travel(){
-        System.out.println("Dogs can run.");
-    }
-
-    public void cute(){
-        System.out.println("Dogs are cute.");
-    }
-
-    public void friend(){
-        System.out.println("Dogs are our friends.");
-    }
-
-    public void NumofLegs(){
-        int x;
-        x = 4;
-        System.out.println("Dogs have" + x + "legs.");
-    }
-
-    public static void main(String[] args) {
-        Dog doggy = new Dog();
-        doggy.eat();
-        doggy.travel();
-        doggy.NumofLegs();
-        doggy.friend();
+    public static void main (String[] args) {
+        DemoClass myObj = new DemoClass();
+        myObj.myFirstMethod();
+        myObj.mySecondMethod();
     }
 }

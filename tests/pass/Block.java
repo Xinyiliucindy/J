@@ -6,54 +6,39 @@ import java.lang.System;
 public class ABlock {
     
     // Static Block
-    // static {
-    //     System.out.println("A static block");
-    // }
+    static {
+        System.out.println("A static block");
+    }
 
     // IIB: Instance Initialization Block
     {
-        System.out.println("A IIB 1");
+        System.out.println("A IIB");
     }
 
-    {
-        System.out.println("A IIB 2");
+    public void Amethod(){
+        System.out.println("Method of ABlock");
     }
-
-    // Test for constructor and normal block, unnecessarily used for block init
-    // public ABlock(){
-    //     System.out.println("A Constructor called");
-    // }
-
-    // public Hello(){
-    //     System.out.println("A Normal Block");
-    // }
-
 }
 
 
 public class BBlock extends ABlock {
-    // static {
-    //     System.out.println("B static block");
-    // }
-
     {
-        System.out.println("B IIB 1");
+        System.out.println("B IIB");
     }
 
-    // BBlock(){
-    //     System.out.println("B Constructor called");
-    // }
-
-    {
-        System.out.println("B IIB 2");
+    static {
+        System.out.println("B static block");
     }
 
+    public void Bmethod(){
+        System.out.println("Method of BBlock");
+    }    
 
     public static void main(String[] args) {
         System.out.println("Invoke main in BBlock.");
 
-        new BBlock();
-        System.out.println("-----------------------");
-        new BBlock().Hello();
+        BBlock bb = new BBlock();
+        bb.Amethod();
+        bb.Bmethod();
     }
 }

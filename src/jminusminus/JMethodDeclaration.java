@@ -3,6 +3,9 @@
 package jminusminus;
 
 import java.util.ArrayList;
+
+import javax.lang.model.type.TypeMirror;
+
 import static jminusminus.CLConstants.*;
 
 /**
@@ -41,6 +44,10 @@ class JMethodDeclaration extends JAST implements JMember {
     /** Is this method private? */
     protected boolean isPrivate;
 
+    protected boolean isPublic;
+
+    protected ArrayList<TypeName> exceptionList;
+
     /**
      * Constructs an AST node for a method declaration given the
      * line number, method name, return type, formal parameters,
@@ -63,7 +70,7 @@ class JMethodDeclaration extends JAST implements JMember {
 
     public JMethodDeclaration(int line, ArrayList<String> mods,
         String name, Type returnType,
-        ArrayList<JFormalParameter> params, JBlock body)
+        ArrayList<JFormalParameter> params, ArrayList<TypeName> exceptionList, JBlock body)
 
     {
         super(line);
@@ -75,6 +82,8 @@ class JMethodDeclaration extends JAST implements JMember {
         this.isAbstract = mods.contains("abstract");
         this.isStatic = mods.contains("static");
         this.isPrivate = mods.contains("private");
+        this.isPublic = mods.contains("public");
+        this.exceptionList = exceptionList;
     }
 
     /**
@@ -243,6 +252,15 @@ class JMethodDeclaration extends JAST implements JMember {
                 p.indentLeft();
             }
             p.println("</FormalParameters>");
+        }
+        if (exceptionList != null) {
+            p.println("<Exceptions>");
+            p.indentRight();
+            for (TypeName exception : exceptionList) {
+                p.printf("<Exception name=\"%s\">\n", exception.toString());
+            }
+            p.indentLeft();
+            p.println("</Exceptions>");
         }
         if (body != null) {
             p.println("<Body>");

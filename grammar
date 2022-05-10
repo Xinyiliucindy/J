@@ -26,7 +26,7 @@ interfaceBody ::= LCURLY { SEMI | modifier interfaceMemberDecl } RCURLY         
 
 interfaceMemberDecl ::= classDeclaration  // inner class                                                // step 2
                        | interfaceDeclaration  // inner interface
-                       | (VOID | type) <identifier>   // method
+                       | (VOID | type) IDENTIFIER   // method
                           formalParameters { LBRACK RBRACK } [THROWS qualifiedIdentifier {COMMA qualifiedIdentifier}] SEMI
                        | type variableDeclarators SEMI   // fields; must have inits
 
@@ -34,7 +34,7 @@ modifiers ::= {PUBLIC | PROTECTED | PRIVATE | STATIC | ABSTRACT}                
 
 memberDecl ::= classDeclaration       // inner class
              | interfaceDeclaration   // inner interface
-                IDENTIFIER            // constructor
+              |  IDENTIFIER            // constructor
                  formalParameters block
              | (VOID | type) IDENTIFIER  // method
                  formalParameters
