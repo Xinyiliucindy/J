@@ -33,6 +33,7 @@ public class JMinusMinusTestRunner {
         suite.addTestSuite(BitwiseAndTest.class);
         suite.addTestSuite(ForloopTest.class);
         suite.addTestSuite(QuestioncolonTest.class);
+        suite.addTestSuite(ExclusiveOrTest.class);
         return suite;
     }
 

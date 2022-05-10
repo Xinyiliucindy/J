@@ -18,10 +18,11 @@ classDeclaration ::= CLASS IDENTIFIER
 classBody ::= LCURLY {modifiers memberDecl} RCURLY
 
 memberDecl ::= IDENTIFIER            // constructor
-                 formalParameters block
+                 formalParameters 
+                    [ THROWS qualifiedIdentifier { COMMA qualifiedIdentifier } ]
              | (VOID | type) IDENTIFIER  // method
                  formalParameters
-                 (block | SEMI)
+                    [ THROWS qualifiedIdentifier { COMMA qualifiedIdentifier } ] ( block | SEMI )(block | SEMI)
              | type variableDeclarators SEMI // field
 
 block ::= LCURLY {blockStatement} RCURLY 
@@ -32,13 +33,17 @@ blockStatement ::= localVariableDeclarationStatement
 statement ::= block
             | IF parExpression statement [ELSE statement]
             | FOR LPAREN [forInit] SEMI [expression] SEMI [forUpdate] RPAREN statement // step 3
+            | WHILE parExpression statement 
             | RETURN [expression] SEMI
             | SEMI 
-            | TRY block {CATCH block} [FINALLY block]
-            | THROW expression SEMI
+            | tryStatement             //step 2 Try
+            | THROW expression SEMI              //step 2 Throw
             | statementExpression SEMI
-            
-            
+
+//step 2 Try
+tryStatement ::= TYR Block catchClause {catchClause} [FINALLY Block]
+catchClause ::= CATCH catchFormalParameter Block
+catchFormalParameter ::= LPAREN catchType {BTOR catchType} identifier RPAREN
 
 formalParameters ::= LPAREN 
                        [formalParameter {COMMA formalParameter}]
@@ -85,7 +90,7 @@ assignmentExpression ::= conditionalExpression  // must be a valid lhs
                            [(ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN                            
                             | STAR_ASSIGN | DIV_ASSIGN | REM_ASSIGN                       
                             | SSL_ASSIGN | SSR_ASSIGN | USR_ASSIGN
-                            | AND_ASSIGN | BITXOR_ASSIGN | BITWISE_OR_ASSIGN) assignmentExpression]
+                            | AND_ASSIGN | BITXOR_ASSIGN | BTOR_ASSIGN) assignmentExpression]
 
 // level 12
 conditionalExpression ::= conditionalOrExpression
@@ -93,7 +98,7 @@ conditionalExpression ::= conditionalOrExpression
 
 //level 11
 conditionalOrExpression ::= conditionalAndExpression 
-                          { LOGICAL_OR conditionalAndExpression}
+                          { LOR conditionalAndExpression}
 
 // level 10
 conditionalAndExpression ::= bitwiseOrExpression
@@ -102,7 +107,7 @@ conditionalAndExpression ::= bitwiseOrExpression
 // level 9
 // gengxingguang: added level 9
 bitwiseOrExpression  ::= bitXorExpression
-                            { BITWISE_OR bitXorExpression}
+                            { BTOR bitXorExpression}
 
 // level 8
 // yaoyao: added level 8
@@ -151,7 +156,7 @@ simpleUnaryExpression ::= LNOT unaryExpression
                           RPAREN simpleUnaryExpression
                         | postfixExpression 
 
-postfixExpression ::= primary {selector} {DEC}
+postfixExpression ::= primary {selector} {DEC|INC}
 
 selector ::= DOT qualifiedIdentifier [arguments]
            | LBRACK expression RBRACK
