@@ -672,7 +672,55 @@ public class Parser {
             JStatement consequent = statement();
             JStatement alternate = have(ELSE) ? statement() : null;
             return new JIfStatement(line, test, consequent, alternate);
+<<<<<<< HEAD
+        } else if (have(FOR)){//step2
+            ArrayList<JStatement> initfor = new ArrayList<JStatement>();
+            ArrayList<JStatement> updatefor = new ArrayList<JStatement>();
+            JExpression expr = null;
+            Type type = null;
+            mustBe(LPAREN);
+            scanner.recordPosition();
+            scanner.next();
+            scanner.next();
+            if(!have(COLON)){
+            System.out.print("basic");
+            scanner.returnToPosition();
+            if(!see(SEMI))
+            {
+                initfor = forInit();
+            }
+            mustBe(SEMI);
+            if(!see(SEMI))
+            {
+                expr = expression();
+            }
+            mustBe(SEMI);
+            if(!see(RPAREN))
+            {
+                updatefor = forUpdate();
+            }
+            mustBe(RPAREN);
+            JStatement statement = statement();
+            return new JForStatement(line,initfor,expr,updatefor,statement,"basic");
+            }
+            else{
+            System.out.print("enhanced");
+            //for(int i : item)
+            //FOR LPAREN colonLocalVariableDeclarationStatement expression RPAREN statement
+            //FOR LPAREN type variableDeclarators COLON expression RPAREN statement
+            scanner.returnToPosition();
+            JFormalParameter param = formalParameter();
+            mustBe(COLON);
+            expr = expression();
+            mustBe(RPAREN);
+            JStatement statement = statement();
+            return new JForStatement(line,param,expr,statement,"enhanced");
+            }
+        }
+          else if (have(WHILE)) {
+=======
         } else if (have(WHILE)) {
+>>>>>>> 7d407c3fbc6a31cd31f13228b92c82a265b1e4c5
             JExpression test = parExpression();
             JStatement statement = statement();
             return new JWhileStatement(line, test, statement);
@@ -1056,7 +1104,9 @@ public class Parser {
                                         || expr instanceof JSuperConstruction
                                         || expr instanceof JThisConstruction 
                                         || expr instanceof JNewOp
-                                        || expr instanceof JNewArrayOp) {
+                                        || expr instanceof JNewArrayOp
+                                        || expr instanceof JPromoteOp//step2
+                                        ){
             // So as not to save on stack
             expr.isStatementExpression = true;
         } else {
@@ -1119,7 +1169,7 @@ public class Parser {
     /** 
      * Parse a conditionalExpression.
      * 
-     * // level 12 step3
+     * // level 12 step2
         conditionalExpression ::= conditionalOrExpression
         [ QUESTION assignmentExpression : conditionalExpression]
      *  **
