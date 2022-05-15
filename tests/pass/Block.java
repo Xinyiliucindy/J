@@ -38,6 +38,8 @@ public class BBlock extends ABlock {
         System.out.println("Invoke main in BBlock.");
 
         BBlock bb = new BBlock();
+        ABlock aa = new ABlock();
+        
         bb.Amethod();
         bb.Bmethod();
     }

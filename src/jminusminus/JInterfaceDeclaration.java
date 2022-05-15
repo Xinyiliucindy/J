@@ -51,6 +51,7 @@ public class JInterfaceDeclaration extends JAST implements JTypeDecl{
                             ArrayList<Type> superInterfaces, ArrayList<JMember> interfaceBlock) {
         super(line);
         this.mods = mods;
+        this.mods.add("interface");
         this.name = name;
         this.interfaceBlock = interfaceBlock;
         this.superInterfaces = superInterfaces;
@@ -141,7 +142,7 @@ public class JInterfaceDeclaration extends JAST implements JTypeDecl{
         // Add the class header to the partial class
         String qualifiedName = JAST.compilationUnit.packageName() == "" ? name
                 : JAST.compilationUnit.packageName() + "/" + name;
-
+ 
         ArrayList<String> superInterfacesNames = new ArrayList<>();
         for(Type superinterface: superInterfaces) {
             superInterfacesNames.add(superinterface.jvmName());
@@ -155,8 +156,7 @@ public class JInterfaceDeclaration extends JAST implements JTypeDecl{
         // 3. method must not be implemented
         for (JMember member : interfaceBlock) {         
             if (member instanceof JMethodDeclaration) {
-                JMethodDeclaration aMethod = (JMethodDeclaration) member;
-                aMethod.preAnalyze(this.context, partial);
+                JMethodDeclaration aMethod = (JMethodDeclaration) member;              
                 if (aMethod.isPrivate || aMethod.mods.contains(TokenKind.STATIC.image()) || aMethod.mods.contains(TokenKind.FINAL.image())) {
                     JAST.compilationUnit.reportSemanticError(line(), "Private/static/final method %s is not allowed in an interface", aMethod.toString());
                 }
@@ -171,6 +171,7 @@ public class JInterfaceDeclaration extends JAST implements JTypeDecl{
                 if (aMethod.body != null) {
                     JAST.compilationUnit.reportSemanticError(line(), "Method %s is not allowed to have body in an interface", aMethod.toString());
                 }
+                aMethod.preAnalyze(this.context, partial);
             }
             if(member instanceof JFieldDeclaration) {
                 // Field: an interface should be public static
@@ -181,11 +182,11 @@ public class JInterfaceDeclaration extends JAST implements JTypeDecl{
                 if (!aField.mods().contains(TokenKind.STATIC.image())) {
                     mods.add(TokenKind.STATIC.image());
                 }
-                // aField.preAnalyze(this.context, partial);
+                aField.preAnalyze(this.context, partial);
             }
             member.preAnalyze(this.context, partial);
         }
-
+        
         // interface does not have constructor
 
         // Get the Class rep for the (partial) class and make it

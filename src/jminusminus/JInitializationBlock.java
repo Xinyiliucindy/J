@@ -14,7 +14,7 @@ public class JInitializationBlock extends JMethodDeclaration implements JMember{
 
     public JInitializationBlock(int line, ArrayList<String> mods, JBlock body)
     {
-        super(line, mods, "Initialization Block", Type.VOID, new ArrayList<JFormalParameter>(), null, body); 
+        super(line, mods, "InitializationBlock"+ Integer.toString(line), Type.VOID, new ArrayList<JFormalParameter>(), null, body); 
     }
 
     public void preAnalyze(Context context, CLEmitter partial) {
