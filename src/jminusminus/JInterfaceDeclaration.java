@@ -171,7 +171,7 @@ public class JInterfaceDeclaration extends JAST implements JTypeDecl{
                 if (aMethod.body != null) {
                     JAST.compilationUnit.reportSemanticError(line(), "Method %s is not allowed to have body in an interface", aMethod.toString());
                 }
-                aMethod.preAnalyze(this.context, partial);
+                // aMethod.preAnalyze(this.context, partial);
             }
             if(member instanceof JFieldDeclaration) {
                 // Field: an interface should be public static
